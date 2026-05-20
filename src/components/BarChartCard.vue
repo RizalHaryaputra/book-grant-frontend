@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-[#F3EEE7] rounded-3xl p-6 flex flex-col" style="height: 380px;">
+  <div class="bg-white rounded-[24px] p-6 shadow-sm border border-[#4E3629]/5 flex flex-col" style="height: 300px;">
     <!-- Title -->
-    <h2 class="text-xl font-bold text-center text-[#1C1209] mb-4">
+    <h2 class="text-[17px] font-bold text-center text-[#4C3427] mb-2" style="font-family: 'Manrope', sans-serif;">
       Status Distribusi Naskah
     </h2>
 
@@ -30,7 +30,7 @@ const chartRef = ref(null)
 const chartData = [45, 32, 17, 10, 5]
 const labels = ['Draft', 'Under Review', 'Revision', 'Preprint', 'Ready to Print']
 
-// Plugin: angka di atas bar
+// Plugin: menggambar angka statistik di atas setiap bar
 const topLabelPlugin = {
   id: 'topLabel',
   afterDatasetsDraw(chart) {
@@ -38,8 +38,8 @@ const topLabelPlugin = {
     ctx.save()
     chart.getDatasetMeta(0).data.forEach((bar, i) => {
       const value = chartData[i]
-      ctx.fillStyle = '#3A2820'
-      ctx.font = '600 13px Inter, sans-serif'
+      ctx.fillStyle = '#4C3427'
+      ctx.font = '700 12px Manrope, sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'bottom'
       ctx.fillText(value, bar.x, bar.y - 6)
@@ -58,10 +58,10 @@ onMounted(() => {
       labels,
       datasets: [{
         data: chartData,
-        backgroundColor: '#3A2820',
-        borderRadius: { topLeft: 8, topRight: 8 },
+        backgroundColor: '#4C3427',
+        borderRadius: { topLeft: 6, topRight: 6 },
         borderSkipped: 'bottom',
-        barPercentage: 0.55,
+        barPercentage: 0.45,
         categoryPercentage: 0.7,
       }]
     },
@@ -70,15 +70,15 @@ onMounted(() => {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: false },
+        tooltip: { enabled: true }, // Enable simple tooltip for interactions
       },
       scales: {
         x: {
           grid: { display: false },
           border: { display: false },
           ticks: {
-            color: '#3A2820',
-            font: { size: 12, family: 'Inter, sans-serif' },
+            color: '#8F8073',
+            font: { size: 10, family: 'Inter, sans-serif', weight: '500' },
           }
         },
         y: {
@@ -86,22 +86,22 @@ onMounted(() => {
           max: 60,
           ticks: {
             stepSize: 15,
-            color: '#7A6A5A',
-            font: { size: 12, family: 'Inter, sans-serif' },
+            color: '#8F8073',
+            font: { size: 10, family: 'Inter, sans-serif' },
           },
           grid: {
-            color: 'rgba(100,80,60,0.2)',
+            color: '#EBE5DC',
             lineWidth: 1,
             drawTicks: false,
+            borderDash: [4, 4],
           },
           border: {
             display: false,
-            dash: [5, 5],
           }
         }
       },
       layout: {
-        padding: { top: 30, right: 12, bottom: 0, left: 0 }
+        padding: { top: 20, right: 8, bottom: 0, left: 0 }
       }
     },
   })

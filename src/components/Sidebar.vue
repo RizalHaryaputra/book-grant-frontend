@@ -1,37 +1,37 @@
 <template>
-  <aside class="w-[230px] bg-[#F5ECE3] min-h-screen px-4 py-8 flex flex-col justify-between rounded-[24px]">
+  <aside class="w-[260px] bg-white min-h-screen px-6 py-8 flex flex-col justify-between border-r border-[#4E3629]/10 shadow-sm flex-shrink-0">
 
     <!-- Logo -->
     <div>
-      <div class="mb-7 px-1.5">
+      <div class="mb-8 px-1.5">
         <h1
           class="text-[26px] font-bold text-[#1C1209] leading-tight"
           style="font-family: 'Libre Caslon Text', serif;"
         >
           Sistem PBL
         </h1>
-        <p class="text-[12.5px] text-[#7A6A5A] font-medium mt-0.5">
+        <p class="text-[12.5px] text-[#8F8073] font-medium mt-0.5">
           Book Grant System
         </p>
       </div>
 
       <!-- Menu -->
       <nav>
-        <ul class="flex flex-col gap-px">
+        <ul class="flex flex-col gap-1">
           <li
             v-for="item in menuItems"
             :key="item.name"
             @click="activeMenu = item.name"
             :class="[
-              'flex items-center gap-3 px-3.5 py-[13px] rounded-2xl cursor-pointer transition-all duration-150 text-[14.5px]',
+              'flex items-center gap-3.5 px-4 py-[13px] rounded-2xl cursor-pointer transition-all duration-200 text-[14.5px]',
               activeMenu === item.name
-                ? 'bg-[#2E1E12] text-white font-semibold'
-                : 'text-[#3D2E22] font-medium hover:bg-[#EBE0D6]'
+                ? 'bg-[#4E3629] text-white font-semibold shadow-sm'
+                : 'text-[#8F8073] font-medium hover:text-[#4E3629] hover:bg-[#FAF7F2]'
             ]"
           >
             <component
               :is="item.icon"
-              :class="activeMenu === item.name ? 'text-white' : 'text-[#3D2E22]'"
+              :class="activeMenu === item.name ? 'text-white' : 'text-[#8F8073]'"
               :size="19"
               :stroke-width="1.75"
             />
@@ -43,9 +43,9 @@
 
     <!-- Logout -->
     <button
-      class="bg-[#2E1E12] text-white py-3.5 px-4 rounded-2xl text-[14.5px] font-semibold
-             hover:bg-[#1e1209] active:scale-[0.98] transition-all duration-150
-             flex items-center justify-center gap-2.5 w-full mt-7"
+      class="bg-[#4E3629] text-white py-3.5 px-4 rounded-2xl text-[14.5px] font-semibold
+             hover:bg-[#3D281E] active:scale-[0.98] transition-all duration-200
+             flex items-center justify-center gap-2.5 w-full mt-7 shadow-sm"
     >
       <LogOut :size="18" :stroke-width="1.75" />
       <span>Log Out</span>
