@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,22 +12,16 @@
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache"
   },
+
   "dependencies": {
-<<<<<<< HEAD
     "axios": "^1.16.1",
     "bootstrap": "^5.3.8",
     "vue": "^3.5.32",
     "vue-router": "^5.0.7"
   },
+
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tailwindcss/vite": "^4.3.0",
-=======
-    "vue": "^3.5.32"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
->>>>>>> e30f51b4e5c1b6c8f777afb9b48fe6e57b7c644c
     "@vitejs/plugin-vue": "^6.0.6",
     "eslint": "^10.2.1",
     "eslint-plugin-oxlint": "~1.60.0",
@@ -34,13 +29,10 @@
     "globals": "^17.5.0",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.60.0",
-<<<<<<< HEAD
-    "tailwindcss": "^4.3.0",
-=======
->>>>>>> e30f51b4e5c1b6c8f777afb9b48fe6e57b7c644c
     "vite": "^8.0.8",
     "vite-plugin-vue-devtools": "^8.1.1"
   },
+
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }
