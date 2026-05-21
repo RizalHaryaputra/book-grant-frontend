@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar    from '../../layouts/shared/AppTopbar.vue'
+import { API_BASE_URL } from '../../config.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const activeFilter           = ref('Semua')
@@ -12,25 +13,58 @@ const modalTenggat           = ref('')   // ← NEW: input tenggat reviewer
 
 const filters = ['Semua', 'Belum diplot', 'Sebagian', 'Lengkap']
 
-// Data reviewer dengan informasi lengkap (nama, jabatan, jumlah naskah aktif)
-const allReviewers = [
-  { id: 1, name: 'Dr. Arief Setiawan, M.Kom',  dept: 'Teknik Informatika', aktif: 1 },
-  { id: 2, name: 'Prof. Rina Nurhayati, Ph.D',  dept: 'Sistem Informasi',   aktif: 2 },
-  { id: 3, name: 'Dr. Hasan Kurniawan',          dept: 'Jaringan Komputer',  aktif: 3 },
-  { id: 4, name: 'Dr. Siti Aminah, M.T',         dept: 'Teknik Komputer',    aktif: 0 },
-  { id: 5, name: 'Prof. Budi Santoso, Ph.D',     dept: 'Sistem Informasi',   aktif: 1 },
-  { id: 6, name: 'Dr. Maya Dewi, M.Kom',         dept: 'Teknik Informatika', aktif: 2 },
-]
+const allReviewers = ref([])
+const manuscripts = ref([])
+const isLoading = ref(false)
 
-const manuscripts = ref([
-  { id: 1, judul: 'Pemrograman Berorientasi Objek', kategori: 'Buku Ajar',      reviewers: [{ id: 1, name: 'Dr. Arief' }, { id: 2, name: 'Prof. Rina' }], tenggat: '5 Juni 2026', status: 'Lengkap' },
-  { id: 2, judul: 'Algoritma dan Struktur Data',    kategori: 'Buku Referensi', reviewers: [{ id: 2, name: 'Prof. Rina' }, { id: 3, name: 'Dr. Hasan' }],  tenggat: '5 Juni 2026', status: 'Lengkap' },
-  { id: 3, judul: 'Jaringan Komputer Dasar',        kategori: 'Buku Ajar',      reviewers: [{ id: 3, name: 'Dr. Hasan' }],                                  tenggat: '5 Juni 2026', status: 'Sebagian' },
-  { id: 4, judul: 'Basis Data Relasional',          kategori: 'Buku Referensi', reviewers: [],                                                              tenggat: '5 Juni 2026', status: 'Belum diplot' },
-  { id: 5, judul: 'Pemrograman Berorientasi Objek', kategori: 'Buku Ajar',      reviewers: [],                                                              tenggat: '5 Juni 2026', status: 'Belum diplot' },
-  { id: 6, judul: 'Pemrograman Web',                kategori: 'Buku Referensi', reviewers: [],                                                              tenggat: '5 Juni 2026', status: 'Belum diplot' },
-  { id: 7, judul: 'Data Mining',                    kategori: 'Buku Ajar',      reviewers: [],                                                              tenggat: '5 Juni 2026', status: 'Belum diplot' },
-])
+// ─── Fetch Data ───────────────────────────────────────────────────────────────
+async function fetchReviewers() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/reviewers`)
+    const data = await res.json()
+    if (data.success) {
+      allReviewers.value = data.data
+    }
+  } catch (err) {
+    console.error('Gagal mengambil daftar reviewer:', err)
+  }
+}
+
+async function fetchManuscripts() {
+  isLoading.value = true
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`)
+    const data = await res.json()
+    if (data.success) {
+      manuscripts.value = data.data.map(m => {
+        let statusText = 'Belum diplot'
+        if (m.reviewers.length === 1) {
+          statusText = 'Sebagian'
+        } else if (m.reviewers.length >= 2) {
+          statusText = 'Lengkap'
+        }
+        
+        return {
+          id: m.id,
+          judul: m.title,
+          kategori: m.book_type,
+          reviewers: m.reviewers,
+          tenggat: m.tenggat || 'Belum diplot',
+          status: statusText
+        }
+      })
+    }
+  } catch (err) {
+    console.error('Gagal mengambil daftar naskah:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchReviewers()
+  fetchManuscripts()
+})
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const filteredManuscripts = computed(() => {
@@ -42,7 +76,6 @@ const filteredManuscripts = computed(() => {
 function openModal(row) {
   selectedRow.value            = row
   modalSelectedReviewers.value = row.reviewers.map(r => ({ ...r }))
-  // Pre-fill tanggal dari data naskah (konversi ke format yyyy-mm-dd untuk input)
   modalTenggat.value = toInputDate(row.tenggat)
   showModal.value = true
 }
@@ -53,29 +86,56 @@ function closeModal() {
 }
 function toggleReviewer(rv) {
   const idx = modalSelectedReviewers.value.findIndex(r => r.id === rv.id)
-  if (idx >= 0) modalSelectedReviewers.value.splice(idx, 1)
-  else          modalSelectedReviewers.value.push({ id: rv.id, name: rv.name.split(',')[0] })
+  if (idx >= 0) {
+    modalSelectedReviewers.value.splice(idx, 1)
+  } else {
+    modalSelectedReviewers.value.push({ id: rv.id, name: rv.name.split(',')[0] })
+  }
 }
 function isSelected(rv) {
   return modalSelectedReviewers.value.some(r => r.id === rv.id)
 }
-function saveReviewers() {
+async function saveReviewers() {
   if (!selectedRow.value) return
-  const m = manuscripts.value.find(m => m.id === selectedRow.value.id)
-  if (m) {
-    m.reviewers = [...modalSelectedReviewers.value]
-    m.tenggat   = fromInputDate(modalTenggat.value) || m.tenggat
-    m.status    = m.reviewers.length === 0 ? 'Belum diplot'
-               : m.reviewers.length >= 2  ? 'Lengkap'
-               :                            'Sebagian'
+  const deadlineVal = modalTenggat.value || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  
+  try {
+    for (const rv of modalSelectedReviewers.value) {
+      const isAlreadyAssigned = selectedRow.value.reviewers.some(r => r.id === rv.id)
+      if (!isAlreadyAssigned) {
+        await fetch(`${API_BASE_URL}/admin/manuscripts/${selectedRow.value.id}/assign-reviewer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reviewer_id: rv.id,
+            deadline: deadlineVal
+          })
+        })
+      }
+    }
+    
+    await fetchManuscripts()
+    await fetchReviewers()
+    closeModal()
+  } catch (err) {
+    console.error('Gagal menyimpan penugasan reviewer:', err)
   }
-  closeModal()
 }
-function removeTag(manuscriptId, reviewerId) {
-  const m = manuscripts.value.find(m => m.id === manuscriptId)
-  if (!m) return
-  m.reviewers = m.reviewers.filter(r => r.id !== reviewerId)
-  m.status    = m.reviewers.length === 0 ? 'Belum diplot' : 'Sebagian'
+async function removeTag(manuscriptId, reviewerId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/manuscripts/${manuscriptId}/remove-reviewer/${reviewerId}`, {
+      method: 'DELETE'
+    })
+    const data = await res.json()
+    if (data.success) {
+      await fetchManuscripts()
+      await fetchReviewers()
+    }
+  } catch (err) {
+    console.error('Gagal menghapus reviewer:', err)
+  }
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
