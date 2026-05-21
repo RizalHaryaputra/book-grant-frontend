@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar    from '../../layouts/shared/AppTopbar.vue'
 import { API_BASE_URL } from '../../config.js'
+import { authHeaders } from '../../services/auth.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const activeFilter           = ref('Semua')
@@ -20,7 +21,9 @@ const isLoading = ref(false)
 // ─── Fetch Data ───────────────────────────────────────────────────────────────
 async function fetchReviewers() {
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/reviewers`)
+    const res = await fetch(`${API_BASE_URL}/admin/reviewers`, {
+      headers: authHeaders(false)
+    })
     const data = await res.json()
     if (data.success) {
       allReviewers.value = data.data
@@ -33,7 +36,9 @@ async function fetchReviewers() {
 async function fetchManuscripts() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`)
+    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`, {
+      headers: authHeaders(false)
+    })
     const data = await res.json()
     if (data.success) {
       manuscripts.value = data.data.map(m => {
@@ -105,9 +110,7 @@ async function saveReviewers() {
       if (!isAlreadyAssigned) {
         await fetch(`${API_BASE_URL}/admin/manuscripts/${selectedRow.value.id}/assign-reviewer`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: authHeaders(),
           body: JSON.stringify({
             reviewer_id: rv.id,
             deadline: deadlineVal
@@ -125,8 +128,9 @@ async function saveReviewers() {
 }
 async function removeTag(manuscriptId, reviewerId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts/${manuscriptId}/remove-reviewer/${reviewerId}`, {
-      method: 'DELETE'
+    const res = await fetch(`${API_BASE_URL}/admin/manuscripts/${manuscriptId}/remove-reviewer/${reviewerId}?_method=DELETE`, {
+      method: 'POST',
+      headers: authHeaders(false)
     })
     const data = await res.json()
     if (data.success) {

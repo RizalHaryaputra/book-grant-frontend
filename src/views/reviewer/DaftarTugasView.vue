@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
 import AppTopbar       from '../../layouts/shared/AppTopbar.vue'
 import { API_BASE_URL } from '../../config.js'
+import { authHeaders } from '../../services/auth.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const tasks = ref([])
@@ -22,7 +23,9 @@ const isSubmitting = ref(false)
 async function fetchTasks() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`)
+    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`, {
+      headers: authHeaders(false)
+    })
     const data = await res.json()
     if (data.success) {
       tasks.value = data.data
@@ -46,14 +49,18 @@ async function openDetailModal(task) {
   
   try {
     // 1. Fetch manuscript details (triggers auto-transition to under_review on backend)
-    const resDetail = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`)
+    const resDetail = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`, {
+      headers: authHeaders(false)
+    })
     const dataDetail = await resDetail.json()
     if (dataDetail.success) {
       manuscriptDetail.value = dataDetail.data
     }
     
     // 2. Fetch rubric criteria
-    const resRubric = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}/rubric`)
+    const resRubric = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}/rubric`, {
+      headers: authHeaders(false)
+    })
     const dataRubric = await resRubric.json()
     if (dataRubric.success) {
       rubricList.value = dataRubric.data
@@ -96,9 +103,7 @@ async function submitAssessment() {
   try {
     const res = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${selectedTask.value.manuscript_id}/review`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: authHeaders(),
       body: JSON.stringify({
         rubric_scores: rubricScoresPayload,
         narrative_feedback: narrativeFeedback.value || 'Penilaian dikirim.'
