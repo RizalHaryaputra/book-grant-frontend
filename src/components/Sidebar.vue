@@ -21,7 +21,7 @@
           <li
             v-for="item in menuItems"
             :key="item.name"
-            @click="activeMenu = item.name"
+            @click="navigateTo(item)"
             :class="[
               'flex items-center gap-3.5 px-4 py-[13px] rounded-2xl cursor-pointer transition-all duration-200 text-[14.5px]',
               activeMenu === item.name
@@ -41,21 +41,25 @@
       </nav>
     </div>
 
-    <!-- Logout -->
-    <button
-      class="bg-[#4E3629] text-white py-3.5 px-4 rounded-2xl text-[14.5px] font-semibold
-             hover:bg-[#3D281E] active:scale-[0.98] transition-all duration-200
-             flex items-center justify-center gap-2.5 w-full mt-7 shadow-sm"
+    <!-- User Profile Card -->
+    <div
+      class="bg-[#4E3629] text-white p-4 rounded-2xl flex items-center gap-3.5 w-full mt-auto shadow-sm select-none"
     >
-      <LogOut :size="18" :stroke-width="1.75" />
-      <span>Log Out</span>
-    </button>
+      <div class="w-[40px] h-[40px] rounded-full bg-white/20 flex-shrink-0 flex items-center justify-center font-bold text-white shadow-inner">
+        <span class="text-[15px] font-bold">S</span>
+      </div>
+      <div class="text-left leading-tight flex-1">
+        <p class="text-[14.5px] font-bold" style="font-family: 'Manrope', sans-serif;">Sayanery</p>
+        <p class="text-[11.5px] text-white/70 font-semibold" style="font-family: 'Manrope', sans-serif;">Penerbit</p>
+      </div>
+    </div>
 
   </aside>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
   FileText,
@@ -63,11 +67,30 @@ import {
   CheckSquare,
   BarChart2,
   HelpCircle,
-  Settings,
-  LogOut
+  Settings
 } from 'lucide-vue-next'
 
-const activeMenu = ref('Dashboard')
+const route = useRoute()
+const router = useRouter()
+
+const activeMenu = computed(() => {
+  if (route.path === '/') return 'Dashboard'
+  if (route.path === '/daftar-naskah') return 'DaftarNaskah'
+  if (route.path === '/pemeriksaan') return 'Pemeriksaan'
+  return ''
+})
+
+const navigateTo = (item) => {
+  if (item.name === 'Dashboard') {
+    router.push('/')
+  } else if (item.name === 'DaftarNaskah') {
+    router.push('/daftar-naskah')
+  } else if (item.name === 'Pemeriksaan') {
+    router.push('/pemeriksaan')
+  } else {
+    // Other routes could be mapped as well in the future
+  }
+}
 
 const menuItems = [
   { name: 'Dashboard',    label: 'Dashboard',     icon: LayoutDashboard },

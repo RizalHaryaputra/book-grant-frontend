@@ -2,7 +2,7 @@
   <nav class="bg-white rounded-[20px] px-6 py-3.5 shadow-sm border border-[#4E3629]/5 flex items-center justify-between">
     <!-- Title -->
     <h1 class="text-[19px] font-bold text-[#4E3629] leading-tight" style="font-family: 'Libre Caslon Text', serif;">
-      Dashboard Penerbit A
+      {{ title }}
     </h1>
 
     <!-- Right Section -->
@@ -35,3 +35,12 @@
     </div>
   </nav>
 </template>
+
+<script setup>
+defineProps({
+  title: {
+    type: String,
+    default: 'Dashboard Penerbit A'
+  }
+});
+</script>
