@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen" style="background: radial-gradient(circle at 100% 0%, #CBB8A5 0%, #E4D8CA 30%, #F5F1EB 70%, #FAF8F5 100%);">
+  <div class="flex bg-[#D9C5B2] min-h-screen">
     <!-- Sidebar -->
     <Sidebar />
 

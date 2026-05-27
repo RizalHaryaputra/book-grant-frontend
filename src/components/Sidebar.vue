@@ -73,22 +73,25 @@ import {
 const route = useRoute()
 const router = useRouter()
 
+const routeMap = {
+  Dashboard:    '/',
+  DaftarNaskah: '/daftar-naskah',
+  Pemeriksaan:  '/pemeriksaan',
+  Keputusan:    '/keputusan',
+  Rekap:        '/rekap',
+  Support:      '/support',
+  Settings:     '/settings',
+}
+
 const activeMenu = computed(() => {
-  if (route.path === '/') return 'Dashboard'
-  if (route.path === '/daftar-naskah') return 'DaftarNaskah'
-  if (route.path === '/pemeriksaan') return 'Pemeriksaan'
-  return ''
+  const match = Object.entries(routeMap).find(([, path]) => route.path === path)
+  return match ? match[0] : ''
 })
 
 const navigateTo = (item) => {
-  if (item.name === 'Dashboard') {
-    router.push('/')
-  } else if (item.name === 'DaftarNaskah') {
-    router.push('/daftar-naskah')
-  } else if (item.name === 'Pemeriksaan') {
-    router.push('/pemeriksaan')
-  } else {
-    // Other routes could be mapped as well in the future
+  const path = routeMap[item.name]
+  if (path && route.path !== path) {
+    router.push(path)
   }
 }
 
