@@ -1,12 +1,15 @@
 <template>
-  <div class="flex bg-[#D9C5B2] min-h-screen">
+  <div
+    class="flex min-h-screen w-full"
+    style="background: radial-gradient(circle at 100% 0%, #CBB8A5 0%, #E4D8CA 30%, #F5F1EB 70%, #FAF8F5 100%);"
+  >
     <!-- Sidebar -->
     <Sidebar />
 
     <!-- Main Content -->
-    <div class="flex-1 p-8">
+    <div class="flex-1 p-8 flex flex-col h-screen overflow-hidden">
       <!-- Navbar -->
-      <TopNavbar />
+      <TopNavbar title="Dashboard" />
 
       <!-- Hero Banner -->
       <div class="mt-6">
