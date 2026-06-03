@@ -30,7 +30,7 @@
           </a>
 
           <a href="#" class="menu-item">
-            Hasil Evaluasi
+            Hasil review
           </a>
 
           <a href="#" class="menu-item">
@@ -163,9 +163,12 @@
               Lihat Profil
             </button>
 
-            <button class="request-btn">
-              Kirim Permintaan
-            </button>
+            <router-link
+  to="/hasil-review"
+  class="request-btn"
+>
+  Kirim Permintaan
+</router-link>
 
           </div>
 
@@ -684,12 +687,27 @@ import Sidebar from '../components/Sidebar.vue'
 
 .request-btn{
   width:100%;
-  border:1px solid #b5b5b5;
-  background:white;
-  color:#666;
-  padding:14px;
-  border-radius:10px;
-  cursor:pointer;
+  height:52px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  border:1px solid #d8d8d8;
+  border-radius:14px;
+
+  background:#fff;
+  color:#6d5c4f;
+
+  text-decoration:none;
+  font-size:18px;
+  font-weight:500;
+
+  transition:0.2s;
+}
+
+.request-btn:hover{
+  background:#f8f8f8;
 }
 
 </style>

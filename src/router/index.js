@@ -8,6 +8,10 @@ import UploadDraft from '../views/buku/UploadDraft.vue'
 import VerifikasiDraft from '../views/buku/VerifikasiDraft.vue'
 import AtributBuku from '../views/buku/AtributBuku.vue'
 
+import HasilReview from '../views/review/HasilReview.vue'
+import UploadRevisi from '../views/review/UploadRevisi.vue'
+import DokumenAdministrasi from '../views/review/DokumenAdministrasi.vue'
+
 const routes = [
 
   {
@@ -38,6 +42,21 @@ const routes = [
   {
     path: '/atribut-buku',
     component: AtributBuku
+  },
+
+  {
+    path: '/hasil-review',
+    component: HasilReview
+  },
+
+  {
+    path: '/upload-revisi',
+    component: UploadRevisi
+  },
+
+  {
+    path: '/dokumen-administrasi',
+    component: DokumenAdministrasi
   }
 
 ]

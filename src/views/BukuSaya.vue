@@ -36,7 +36,7 @@
           </a>
 
           <a href="#" class="menu-item">
-            Hasil Evaluasi
+            Hasil Review
           </a>
 
           <a href="#" class="menu-item">
@@ -104,7 +104,7 @@
 
           </div>
 
-          <router-link to="/upload-draft" class="btn-upload">
+          <router-link to="/atribut-buku" class="btn-upload">
   Mulai Manuskrip Baru
 </router-link>
 

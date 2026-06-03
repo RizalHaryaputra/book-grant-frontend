@@ -152,21 +152,6 @@
 
             </div>
 
-            <!-- Kategori -->
-            <div class="form-group">
-
-              <label>
-                Kategori Buku *
-              </label>
-
-              <select>
-                <option>
-                  Pilih kategori
-                </option>
-              </select>
-
-            </div>
-
           </div>
 
           <!-- Deskripsi -->
@@ -221,10 +206,12 @@
 
             <div class="left-btn">
 
-              <button class="save-btn">
-                Simpan Perubahan
-              </button>
-
+<router-link
+  to="/upload-draft"
+  class="save-btn"
+>
+  Simpan Perubahan
+</router-link>
               <button class="cancel-btn">
                 Batal
               </button>

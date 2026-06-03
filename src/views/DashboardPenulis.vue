@@ -29,7 +29,7 @@
           </a>
 
           <a href="#" class="menu-item">
-            Hasil Evaluasi
+            Hasil Review
           </a>
 
           <a href="#" class="menu-item">
@@ -113,9 +113,9 @@
 
         </div>
 
-        <button class="new-book-btn">
-          + Mulai Manuskrip Baru
-        </button>
+<router-link to="/atribut-buku" class="btn-upload">
+  Mulai Manuskrip Baru
+</router-link>
 
       </div>
 
