@@ -9,15 +9,11 @@ import { authHeaders } from '../../services/auth.js'
 const tasks = ref([])
 const isLoading = ref(false)
 
-// Detail Modal State
+// Detail Modal State (view-only, no scoring)
 const showModal = ref(false)
 const isLoadingDetail = ref(false)
 const selectedTask = ref(null)
 const manuscriptDetail = ref(null)
-const rubricList = ref([])
-const scores = ref({}) // key: criteria_id, value: score
-const narrativeFeedback = ref('')
-const isSubmitting = ref(false)
 
 // ─── Fetch Tasks ──────────────────────────────────────────────────────────────
 async function fetchTasks() {
@@ -48,28 +44,12 @@ async function openDetailModal(task) {
   isLoadingDetail.value = true
   
   try {
-    // 1. Fetch manuscript details (triggers auto-transition to under_review on backend)
     const resDetail = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`, {
       headers: authHeaders(false)
     })
     const dataDetail = await resDetail.json()
     if (dataDetail.success) {
       manuscriptDetail.value = dataDetail.data
-    }
-    
-    // 2. Fetch rubric criteria
-    const resRubric = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}/rubric`, {
-      headers: authHeaders(false)
-    })
-    const dataRubric = await resRubric.json()
-    if (dataRubric.success) {
-      rubricList.value = dataRubric.data
-      
-      // Initialize scores map
-      scores.value = {}
-      rubricList.value.forEach(item => {
-        scores.value[item.criteria_id] = 0
-      })
     }
     
     // Refresh the task list in background to reflect 'under_review' status
@@ -85,41 +65,6 @@ function closeModal() {
   showModal.value = false
   selectedTask.value = null
   manuscriptDetail.value = null
-  rubricList.value = []
-  scores.value = {}
-  narrativeFeedback.value = ''
-}
-
-async function submitAssessment() {
-  if (!selectedTask.value) return
-  isSubmitting.value = true
-  
-  // Format rubric scores payload
-  const rubricScoresPayload = Object.entries(scores.value).map(([criteriaId, val]) => ({
-    criteria_id: parseInt(criteriaId),
-    score: parseInt(val) || 0
-  }))
-  
-  try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${selectedTask.value.manuscript_id}/review`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({
-        rubric_scores: rubricScoresPayload,
-        narrative_feedback: narrativeFeedback.value || 'Penilaian dikirim.'
-      })
-    })
-    
-    const data = await res.json()
-    if (data.success) {
-      await fetchTasks()
-      closeModal()
-    }
-  } catch (err) {
-    console.error('Gagal mengirim penilaian:', err)
-  } finally {
-    isSubmitting.value = false
-  }
 }
 
 function statusClass(status) {
@@ -145,7 +90,7 @@ function barClass(progres) {
       <!-- Topbar mode salam -->
       <AppTopbar
         :greet-mode="true"
-        user-name="Prof. Dr. Budi Utomo"
+        user-name="Inna Putri"
         user-role="Reviewer"
       />
 
@@ -194,8 +139,8 @@ function barClass(progres) {
                   <span class="badge" :class="statusClass(task.status)">{{ task.status }}</span>
                 </td>
                 <td class="aksi-cell">
-                  <!-- View Details Button -->
-                  <button class="icon-btn" :id="'view-' + task.id" title="Lihat Detail & Nilai" @click="openDetailModal(task)">
+                  <!-- View Detail Button -->
+                  <button class="icon-btn" :id="'view-' + task.id" title="Lihat Detail Naskah" @click="openDetailModal(task)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                     </svg>
@@ -208,16 +153,16 @@ function barClass(progres) {
       </div>
     </div>
 
-    <!-- ═══ DETAIL & ASSESSMENT MODAL ════════════════════════════════════════ -->
+    <!-- ═══ DETAIL MODAL (View Only) ════════════════════════════════════════ -->
     <Transition name="fade">
       <div class="overlay" v-if="showModal" @click.self="closeModal" id="modal-overlay">
         <div class="modal" id="modal-box">
           <div class="modal-top">
-            <h3 class="modal-title">Lembar Penilaian & Detail Naskah</h3>
+            <h3 class="modal-title">Detail Naskah</h3>
           </div>
 
           <div class="modal-body" v-if="isLoadingDetail">
-            <div class="loading-state">Memuat detail naskah dan kriteria rubrik...</div>
+            <div class="loading-state">Memuat detail naskah...</div>
           </div>
 
           <div class="modal-body" v-else-if="manuscriptDetail">
@@ -232,68 +177,48 @@ function barClass(progres) {
               <!-- Download Link -->
               <div class="download-box" v-if="manuscriptDetail.file_url">
                 <span class="file-label">Draf Awal Naskah:</span>
-                <a :href="manuscriptDetail.file_url" target="_blank" class="download-link">
+                <RouterLink :to="`/reviewer/draft-naskah/${selectedTask.manuscript_id}`" class="download-link">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
                   </svg>
                   Unduh / Buka File PDF
-                </a>
+                </RouterLink>
               </div>
             </div>
 
-            <!-- Rubrik Penilaian -->
-            <div class="rubric-section" v-if="selectedTask.status !== 'Selesai Review'">
-              <h4 class="section-title">Isi Rubrik Penilaian</h4>
-              
-              <div v-for="criteria in rubricList" :key="criteria.criteria_id" class="criteria-card">
-                <div class="criteria-header">
-                  <span class="aspect-name">{{ criteria.aspect }}</span>
-                  <span class="max-badge">Skor Maks: {{ criteria.max_score }}</span>
-                </div>
-                <p class="criteria-desc">{{ criteria.description }}</p>
-                <div class="score-input-wrap">
-                  <label class="score-label">Input Skor:</label>
-                  <input
-                    type="number"
-                    v-model.number="scores[criteria.criteria_id]"
-                    min="0"
-                    :max="criteria.max_score"
-                    class="score-input"
-                  />
-                </div>
-              </div>
-
-              <!-- Narrative Feedback -->
-              <div class="feedback-wrap">
-                <label class="feedback-label">Umpan Balik Naratif (Feedback)</label>
-                <textarea
-                  v-model="narrativeFeedback"
-                  class="feedback-textarea"
-                  placeholder="Berikan catatan, saran, atau kesimpulan reviewer mengenai naskah ini..."
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="rubric-section already-reviewed" v-else>
-              <div class="success-alert">
+            <!-- Status Info -->
+            <div class="status-section">
+              <div v-if="selectedTask.status === 'Selesai Review'" class="success-alert">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="alert-icon">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
                 Penilaian untuk naskah ini telah selesai dikirim.
+              </div>
+              <div v-else-if="selectedTask.status === 'Sedang Review'" class="info-alert">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="alert-icon-info">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+                Naskah sedang dalam proses review. Silakan isi penilaian di halaman <strong>Rubrik Penilaian</strong>.
+              </div>
+              <div v-else class="warning-alert">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="alert-icon-warn">
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+                Naskah belum direview. Silakan buka halaman <strong>Rubrik Penilaian</strong> untuk memulai penilaian.
               </div>
             </div>
           </div>
 
           <div class="modal-footer">
             <button class="btn-batal" @click="closeModal">Tutup</button>
-            <button
+            <RouterLink
               v-if="manuscriptDetail && selectedTask.status !== 'Selesai Review'"
+              :to="`/reviewer/rubrik-penilaian?manuscript_id=${selectedTask.manuscript_id}`"
               class="btn-simpan"
-              @click="submitAssessment"
-              :disabled="isSubmitting"
+              @click="closeModal"
             >
-              {{ isSubmitting ? 'Mengirim...' : 'Kirim Penilaian' }}
-            </button>
+              Buka Rubrik Penilaian
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -402,35 +327,21 @@ function barClass(progres) {
 }
 .download-link:hover { background: #1a0f09; }
 
-/* Rubric Section */
-.rubric-section { display: flex; flex-direction: column; gap: 14px; }
-.criteria-card { background: #fff; border: 1px solid #ebdcd0; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
-.criteria-header { display: flex; justify-content: space-between; align-items: center; }
-.aspect-name { font-size: 13.5px; font-weight: 700; color: #111; }
-.max-badge { font-size: 11px; font-weight: 600; color: #8a6d5c; background: #fdf5f0; border: 1px solid #ebdcd0; padding: 2px 8px; border-radius: 10px; }
-.criteria-desc { font-size: 12.5px; color: #666; margin: 0; line-height: 1.4; }
-.score-input-wrap { display: flex; align-items: center; gap: 10px; margin-top: 6px; border-top: 1px dashed #f0ede9; padding-top: 8px; }
-.score-label { font-size: 12.5px; font-weight: 600; color: #444; }
-.score-input { width: 80px; padding: 6px 10px; border: 1.5px solid #d4ccc4; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
-.score-input:focus { border-color: #a89080; }
-
-/* Narrative Feedback */
-.feedback-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.feedback-label { font-size: 13px; font-weight: 600; color: #222; }
-.feedback-textarea { width: 100%; height: 100px; padding: 10px; border: 1.5px solid #d4ccc4; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; resize: vertical; }
-.feedback-textarea:focus { border-color: #a89080; }
-
-/* Success Alert */
+/* Status Alerts */
+.status-section { display: flex; flex-direction: column; gap: 10px; }
 .success-alert { display: flex; align-items: center; gap: 10px; background: #e6f6ee; color: #155734; border: 1px solid #c3e6cb; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 600; }
 .alert-icon { color: #28a745; }
+.info-alert { display: flex; align-items: center; gap: 10px; background: #e8f0fe; color: #1a52a8; border: 1px solid #b6d0f5; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 500; }
+.alert-icon-info { color: #1a52a8; }
+.warning-alert { display: flex; align-items: center; gap: 10px; background: #fff3e0; color: #9a6700; border: 1px solid #ffd89e; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 500; }
+.alert-icon-warn { color: #d4870a; }
 
 /* Footer */
 .modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #f0ede9; }
 .btn-batal { padding: 9px 22px; border-radius: 8px; border: 1.5px solid #d0c8c0; background: #fff; color: #444; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
 .btn-batal:hover { background: #f5f2ee; }
-.btn-simpan { padding: 9px 26px; border-radius: 8px; border: none; background: #2a1a10; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-simpan { display: inline-flex; align-items: center; padding: 9px 26px; border-radius: 8px; border: none; background: #2a1a10; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
 .btn-simpan:hover { background: #1a0f09; }
-.btn-simpan:disabled { background: #a89f98; cursor: not-allowed; }
 
 /* Transitions */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }

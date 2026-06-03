@@ -1,9 +1,27 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { getUser } from '../../services/auth.js'
+
+const props = defineProps({
   pageTitle:  { type: String, default: 'Dashboard' },
   userName:   { type: String, default: 'Ngafifah' },
   userRole:   { type: String, default: 'Admin' },
   greetMode:  { type: Boolean, default: false },  // true = tampilkan "Selamat datang, {userName}"
+})
+
+// Fetch current user from auth service, or fallback to props
+const currentUser = computed(() => {
+  const loggedInUser = getUser()
+  if (loggedInUser) {
+    return {
+      name: loggedInUser.name || props.userName,
+      role: loggedInUser.role_name || props.userRole
+    }
+  }
+  return {
+    name: props.userName,
+    role: props.userRole
+  }
 })
 </script>
 
@@ -11,7 +29,7 @@ defineProps({
   <header class="topbar">
     <div class="topbar-left">
       <h1 class="page-title">
-        <template v-if="greetMode">Selamat datang, {{ userName }}</template>
+        <template v-if="greetMode">Selamat datang, {{ currentUser.name }}</template>
         <template v-else>{{ pageTitle }}</template>
       </h1>
     </div>
@@ -31,11 +49,11 @@ defineProps({
       </button>
       <div class="user-profile">
         <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <span class="user-role">{{ userRole }}</span>
+          <span class="user-name">{{ currentUser.name }}</span>
+          <span class="user-role">{{ currentUser.role }}</span>
         </div>
         <div class="user-avatar">
-          <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=b6e3f4`" :alt="userName" />
+          <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}&backgroundColor=b6e3f4`" :alt="currentUser.name" />
         </div>
       </div>
     </div>

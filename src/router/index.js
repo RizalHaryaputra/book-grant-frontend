@@ -19,12 +19,6 @@ const adminRoutes = [
     meta: { title: 'Manajemen User', role: 'admin' },
   },
   {
-    path: '/admin/daftar-tugas',
-    name: 'AdminDaftarTugas',
-    component: () => import('../views/admin/DaftarTugasView.vue'),
-    meta: { title: 'Daftar Tugas', role: 'admin' },
-  },
-  {
     path: '/admin/proposal-buku',
     name: 'AdminProposalBuku',
     component: () => import('../views/admin/ProposalBukuView.vue'),
@@ -41,6 +35,12 @@ const adminRoutes = [
     name: 'AdminMonitoringReviewer',
     component: () => import('../views/admin/MonitoringReviewerView.vue'),
     meta: { title: 'Monitoring Reviewer', role: 'admin' },
+  },
+  {
+    path: '/admin/kompilasi-hasil-review',
+    name: 'AdminKompilasiHasilReview',
+    component: () => import('../views/admin/KompilasiHasilReviewView.vue'),
+    meta: { title: 'Kompilasi Hasil Review', role: 'admin' },
   },
   {
     path: '/admin/notifikasi',
@@ -73,6 +73,12 @@ const reviewerRoutes = [
     name: 'ReviewerDaftarTugas',
     component: () => import('../views/reviewer/DaftarTugasView.vue'),
     meta: { title: 'Daftar Tugas', role: 'reviewer' },
+  },
+  {
+    path: '/reviewer/draft-naskah/:id',
+    name: 'ReviewerDraftNaskah',
+    component: () => import('../views/reviewer/DraftNaskahView.vue'),
+    meta: { title: 'Draft Naskah', role: 'reviewer' },
   },
   {
     path: '/reviewer/rubrik-penilaian',

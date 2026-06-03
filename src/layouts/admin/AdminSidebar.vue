@@ -7,10 +7,10 @@ const router = useRouter()
 const navItems = [
   { name: 'Dashboard',           path: '/admin/dashboard',            icon: 'dashboard' },
   { name: 'Manajemen User',      path: '/admin/manajemen-user',       icon: 'people' },
-  { name: 'Daftar Tugas',        path: '/admin/daftar-tugas',         icon: 'assignment' },
   { name: 'Proposal Buku',       path: '/admin/proposal-buku',        icon: 'menu_book' },
   { name: 'Plotting Reviewer',   path: '/admin/plotting-reviewer',    icon: 'person_pin' },
   { name: 'Monitoring Reviewer', path: '/admin/monitoring-reviewer',  icon: 'layers' },
+  { name: 'Kompilasi Hasil Review', path: '/admin/kompilasi-hasil-review', icon: 'fact_check' },
   { name: 'Notifikasi',          path: '/admin/notifikasi',           icon: 'notifications' },
   { name: 'Settings',            path: '/admin/settings',             icon: 'settings' },
 ]
@@ -49,6 +49,7 @@ const navItems = [
         <svg v-else-if="item.icon === 'menu_book'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
         <svg v-else-if="item.icon === 'person_pin'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 10c-1.67 0-3.14-.85-4-2.15.02-1.32 2.67-2.05 4-2.05 1.32 0 3.98.73 4 2.05-.86 1.3-2.33 2.15-4 2.15z"/></svg>
         <svg v-else-if="item.icon === 'layers'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>
+        <svg v-else-if="item.icon === 'fact_check'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14zM18 9h-4v2h4V9zm0-4h-4v2h4V5zm-8 4H6v2h4V9zm0-4H6v2h4V5zm-2 9l-2-2-1.41 1.41L7.59 16l4.41-4.41L10.59 10 8 14z"/></svg>
         <svg v-else-if="item.icon === 'notifications'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
         <svg v-else-if="item.icon === 'settings'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
         <span>{{ item.name }}</span>

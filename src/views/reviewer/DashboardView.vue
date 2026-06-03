@@ -7,7 +7,7 @@ import ComingSoon      from '../../components/shared/ComingSoon.vue'
   <div class="layout">
     <ReviewerSidebar />
     <div class="main-area">
-      <AppTopbar page-title="Dashboard" user-name="Inna" user-role="Reviewer" />
+      <AppTopbar page-title="Dashboard" user-name="Inna Putri" user-role="Reviewer" />
       <div class="card"><ComingSoon title="Dashboard" icon="dashboard" /></div>
     </div>
   </div>
