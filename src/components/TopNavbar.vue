@@ -7,17 +7,20 @@
 
     <!-- Right Section -->
     <div class="flex items-center gap-4">
-      <!-- Notification -->
-      <button
-        class="text-[#8F8073] p-2 rounded-xl hover:bg-[#FAF7F2] hover:text-[#4E3629] transition-all duration-200"
-        aria-label="Notifikasi"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-      </button>
+  <!-- Notification -->
+<button
+  class="relative p-2 rounded-xl hover:bg-[#FAF7F2] transition-all duration-200"
+  aria-label="Notifikasi"
+>
+  <!-- Icon lonceng solid/filled -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#8B0000">
+    <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2z"/>
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"/>
+  </svg>
+
+  <!-- Badge bulat merah tua -->
+  <span class="absolute top-1 right-1 w-[11px] h-[11px] bg-[#8B0000] rounded-full border-2 border-white"></span>
+</button>
 
       <!-- Divider -->
       <div class="w-px h-6 bg-[#4E3629]/10"></div>

@@ -41,18 +41,29 @@
       </nav>
     </div>
 
-    <!-- User Profile Card -->
-    <div
-      class="bg-[#4E3629] text-white p-4 rounded-2xl flex items-center gap-3.5 w-full mt-auto shadow-sm select-none"
+    <!-- Log Out Button — pixel perfect sesuai Figma spec -->
+    <!-- width:250px, height:41px, radius:10px, color:#412E28, shadow: 0 1 5 0 #00000040 -->
+    <button
+      @click="logout"
+      class="w-full flex items-center justify-center gap-3 text-white font-semibold transition-colors duration-200 mt-auto select-none hover:brightness-110"
+      style="
+        height: 41px;
+        border-radius: 10px;
+        background-color: #412E28;
+        box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25);
+        font-family: 'Manrope', sans-serif;
+        font-size: 14.5px;
+      "
     >
-      <div class="w-[40px] h-[40px] rounded-full bg-white/20 flex-shrink-0 flex items-center justify-center font-bold text-white shadow-inner">
-        <span class="text-[15px] font-bold">S</span>
-      </div>
-      <div class="text-left leading-tight flex-1">
-        <p class="text-[14.5px] font-bold" style="font-family: 'Manrope', sans-serif;">Sayanery</p>
-        <p class="text-[11.5px] text-white/70 font-semibold" style="font-family: 'Manrope', sans-serif;">Penerbit</p>
-      </div>
-    </div>
+      <!-- Log-out door icon — sesuai tampilan di desain -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <!-- Door rectangle putih -->
+        <rect x="3" y="2" width="13" height="20" rx="1.5" fill="white"/>
+        <!-- Panah keluar ke kanan -->
+        <path d="M15 12H22M22 12L19 9M22 12L19 15" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Log Out</span>
+    </button>
 
   </aside>
 </template>
@@ -67,7 +78,7 @@ import {
   CheckSquare,
   BarChart2,
   HelpCircle,
-  Settings
+  Settings,
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -93,6 +104,11 @@ const navigateTo = (item) => {
   if (path && route.path !== path) {
     router.push(path)
   }
+}
+
+const logout = () => {
+  // tambahkan logika logout di sini
+  router.push('/login')
 }
 
 const menuItems = [

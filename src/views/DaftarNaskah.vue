@@ -16,8 +16,11 @@
               :key="item.id"
               class="bg-white rounded-[20px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.015)] border border-[#4E3629]/5 flex flex-col gap-2 hover:shadow-[0_12px_40px_rgba(78,54,41,0.05)] hover:border-[#4E3629]/10 transition-all duration-300 group"
             >
-              <!-- Cover -->
-              <div class="w-full relative overflow-hidden rounded-[14px]">
+              <!-- Cover — klik di sini untuk preview -->
+              <div
+                class="w-full relative overflow-hidden rounded-[14px] cursor-pointer"
+                @click="bukaPreview(item)"
+              >
                 <BookCover :title="item.coverTitle" :author="item.coverAuthor" />
               </div>
 
@@ -69,9 +72,17 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
 import BookCover from '../components/BookCover.vue'
+
+const router = useRouter()
+
+// Klik cover → pindah ke halaman preview dengan id naskah
+const bukaPreview = (item) => {
+  router.push({ name: 'daftar-naskah-preview', params: { id: item.id } })
+}
 
 const naskahList = ref([
   {
