@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Plotting Reviewer',   path: '/admin/plotting-reviewer',    icon: 'person_pin' },
   { name: 'Monitoring Reviewer', path: '/admin/monitoring-reviewer',  icon: 'layers' },
   { name: 'Kompilasi Hasil Review', path: '/admin/kompilasi-hasil-review', icon: 'fact_check' },
+  { name: 'Rubrik Penilaian',    path: '/admin/rubrik-penilaian',     icon: 'assignment' },
   { name: 'Notifikasi',          path: '/admin/notifikasi',           icon: 'notifications' },
   { name: 'Settings',            path: '/admin/settings',             icon: 'settings' },
 ]

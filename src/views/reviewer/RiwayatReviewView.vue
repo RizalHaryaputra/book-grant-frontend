@@ -149,7 +149,7 @@ onMounted(() => fetchTasks())
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
           </div>
           <div class="stat-info">
-            <span class="stat-label">RATA-RATA SKOR</span>
+            <span class="stat-label">RATA-RATA BOBOT</span>
             <span class="stat-value large-value">{{ rataRataSkor }}</span>
           </div>
         </div>
@@ -171,7 +171,7 @@ onMounted(() => fetchTasks())
                 <th>PENULIS</th>
                 <th>KATEGORI</th>
                 <th>STATUS PROGRES</th>
-                <th>RATA-RATA SKOR</th>
+                <th>RATA-RATA BOBOT</th>
                 <th>AKSI</th>
               </tr>
             </thead>
@@ -206,14 +206,14 @@ onMounted(() => fetchTasks())
                   <td colspan="6">
                     <div class="expanded-content">
                       <div class="score-section">
-                        <h4>SKOR PER REVIEW</h4>
+                        <h4>BOBOT PER REVIEW</h4>
                         <div class="score-block-inner">
                           <div v-for="score in item.detail.scores" :key="score.kriteria" class="score-row">
                             <span class="score-label">{{ score.kriteria }}</span>
                             <span class="score-value"><strong>{{ score.nilai.split('/')[0] }}</strong>/100</span>
                           </div>
                           <div class="score-row final-score-row">
-                            <span class="score-label">Skor akhir</span>
+                            <span class="score-label">Bobot akhir</span>
                             <span class="score-value final-score"><strong>{{ item.detail.skorAkhir.split('/')[0] }}</strong>/100 <span class="badge-accepted-outline" :class="item.detail.outcome === 'rejected' ? 'badge-rejected-outline' : ''">{{ item.detail.outcome }}</span></span>
                           </div>
                         </div>

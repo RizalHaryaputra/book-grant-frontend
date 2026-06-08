@@ -43,6 +43,12 @@ const adminRoutes = [
     meta: { title: 'Kompilasi Hasil Review', role: 'admin' },
   },
   {
+    path: '/admin/rubrik-penilaian',
+    name: 'AdminRubrikPenilaian',
+    component: () => import('../views/admin/RubrikPenilaianView.vue'),
+    meta: { title: 'Rubrik Penilaian', role: 'admin' },
+  },
+  {
     path: '/admin/notifikasi',
     name: 'AdminNotifikasi',
     component: () => import('../views/admin/NotifikasiView.vue'),

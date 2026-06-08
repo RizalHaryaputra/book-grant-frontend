@@ -258,15 +258,15 @@ onMounted(async () => {
             <!-- Score Indicator -->
             <div class="score-indicator" :class="{ 'indicator-accepted': outcome === 'accepted', 'indicator-rejected': outcome === 'rejected' }">
               <div class="indicator-left">
-                <span class="indicator-label">Skor Rata-rata</span>
+                <span class="indicator-label">Bobot Rata-rata</span>
                 <span class="indicator-value">{{ totalScore }}<span class="indicator-max">/100</span></span>
               </div>
               <div class="indicator-right">
                 <span class="outcome-badge" :class="outcome === 'accepted' ? 'outcome-accepted' : 'outcome-rejected'">
                   {{ outcome === 'accepted' ? 'Accepted' : 'Rejected' }}
                 </span>
-                <span class="outcome-note" v-if="outcome === 'rejected'">Skor kurang dari 75 — Feedback wajib diisi</span>
-                <span class="outcome-note" v-else>Skor mencapai batas minimum — Feedback opsional</span>
+                <span class="outcome-note" v-if="outcome === 'rejected'">Bobot kurang dari 75 — Feedback wajib diisi</span>
+                <span class="outcome-note" v-else>Bobot mencapai batas minimum — Feedback opsional</span>
               </div>
             </div>
 
@@ -275,11 +275,11 @@ onMounted(async () => {
               <div v-for="criteria in rubricList" :key="criteria.criteria_id" class="criteria-card">
                 <div class="criteria-header">
                   <span class="aspect-name">{{ criteria.aspect }}</span>
-                  <span class="max-badge">Skor Maks: {{ criteria.max_score }}</span>
+                  <span class="max-badge">Bobot Maks: {{ criteria.max_score }}</span>
                 </div>
                 <p class="criteria-desc">{{ criteria.description }}</p>
                 <div class="score-input-wrap">
-                  <label class="score-label">Input Skor (0-100):</label>
+                  <label class="score-label">Input Bobot (0-100):</label>
                   <input
                     type="number"
                     v-model.number="scores[criteria.criteria_id]"
@@ -310,12 +310,12 @@ onMounted(async () => {
                 class="feedback-textarea"
                 :class="{ 'textarea-required': isFeedbackRequired && !narrativeFeedback.trim() }"
                 :placeholder="isFeedbackRequired 
-                  ? 'Wajib diisi karena skor kurang dari 75. Berikan catatan, saran, atau alasan penolakan...' 
+                  ? 'Wajib diisi karena bobot kurang dari 75. Berikan catatan, saran, atau alasan penolakan...' 
                   : 'Berikan catatan, saran, atau kesimpulan reviewer mengenai naskah ini (opsional)...'"
               ></textarea>
               <p v-if="isFeedbackRequired && !narrativeFeedback.trim()" class="feedback-warning">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-                Feedback wajib diisi untuk naskah yang ditolak (skor &lt; 75)
+                Feedback wajib diisi untuk naskah yang ditolak (bobot &lt; 75)
               </p>
             </div>
 

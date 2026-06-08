@@ -54,6 +54,17 @@ function sendReminder(manuscript, reviewer) {
   alert(`Pengingat berhasil dikirim ke ${reviewer.name} untuk naskah "${manuscript.title}"`)
 }
 
+function getStatusLabel(status) {
+  return status || 'Sedang Review'
+}
+
+function getStatusClass(status) {
+  const s = status || 'Sedang Review'
+  if (s === 'Selesai Review' || s === 'review_completed') return 'selesai'
+  if (s === 'Belum Review') return 'belum'
+  return 'sedang'
+}
+
 </script>
 
 <template>
@@ -116,8 +127,8 @@ function sendReminder(manuscript, reviewer) {
                 <td class="reviewer-cell">
                   <div v-for="rev in ms.reviewers" :key="rev.id" class="reviewer-item">
                     <div class="rev-info">
-                      <span class="dot"></span> {{ rev.name }}
-                      <span class="badge-status">Sedang Review</span>
+                      <span class="dot" :class="'dot-' + getStatusClass(rev.status)"></span> {{ rev.name }}
+                      <span class="badge-status" :class="'badge-' + getStatusClass(rev.status)">{{ getStatusLabel(rev.status) }}</span>
                     </div>
                   </div>
                 </td>
@@ -171,8 +182,15 @@ function sendReminder(manuscript, reviewer) {
 .reviewer-cell { display: flex; flex-direction: column; gap: 10px; }
 .reviewer-item { display: flex; flex-direction: column; gap: 4px; }
 .rev-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: #ff9800; }
-.badge-status { border: 1px solid #ff9800; color: #f57c00; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-sedang { background: #ff9800; }
+.dot-selesai { background: #4caf50; }
+.dot-belum { background: #f44336; }
+
+.badge-status { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+.badge-sedang { border: 1px solid #ff9800; color: #f57c00; }
+.badge-selesai { border: 1px solid #4caf50; color: #4caf50; }
+.badge-belum { border: 1px solid #f44336; color: #f44336; }
 
 /* Actions */
 .action-cell { white-space: nowrap; }
