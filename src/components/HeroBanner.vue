@@ -13,28 +13,28 @@
         <div>
           <p
             class="uppercase tracking-[0.25em] text-[11.5px] font-extrabold text-white/50 mb-7"
-            style="font-family: &quot;Manrope&quot;, sans-serif"
+            style="font-family: 'Manrope', sans-serif;"
           >
             PERIODE 2026 - 2027
           </p>
 
           <p
             class="uppercase tracking-[0.2em] text-[12px] font-bold text-white/50 mb-1"
-            style="font-family: &quot;Manrope&quot;, sans-serif"
+            style="font-family: 'Manrope', sans-serif;"
           >
             TOTAL PENULIS
           </p>
 
           <h1
             class="text-[96px] font-extrabold leading-none mb-5 tracking-tight"
-            style="font-family: &quot;Manrope&quot;, sans-serif"
+            style="font-family: 'Manrope', sans-serif;"
           >
             150
           </h1>
 
           <p
             class="text-[13.5px] leading-[1.85] text-white/70 max-w-[520px] font-light"
-            style="font-family: &quot;Manrope&quot;, sans-serif"
+            style="font-family: 'Manrope', sans-serif;"
           >
             78% Penulis Terdaftar Telah Memvalidasi Kontrak Hibah, 47 Naskah Sedang Dalam Proses
             Peninjauan Aktif, Dan 18 Judul Sedang Dalam Antrean Untuk Dicetak Pada Kuartal Ini —
