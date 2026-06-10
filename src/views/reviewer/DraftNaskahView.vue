@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,15 +15,20 @@ const pdfTitle = ref('Draft_Awal.pdf')
 onMounted(async () => {
   const manuscriptId = route.params.id
   if (manuscriptId) {
-    // Set the download endpoint URL
-    downloadUrl.value = `${API_BASE_URL}/reviewer/manuscripts/${manuscriptId}/download`
-    
     try {
-      const res = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${manuscriptId}`, {
-        headers: authHeaders(false)
-      })
+      // Entry point: get manuscript detail (ini yang mengembalikan links HATEOAS)
+      const res = await fetchEntryPoint(`/reviewer/manuscripts/${manuscriptId}`)
       const data = await res.json()
+      
       if (data.success && data.data) {
+        // Backend ManuscriptResource menyertakan links per-item
+        const msLinks = parseLinks(data.data.links)
+        
+        // Gunakan link download_draft dari HATEOAS jika tersedia
+        if (msLinks['download_draft']) {
+          downloadUrl.value = msLinks['download_draft'].href
+        }
+        
         // Use file_url for viewing in iframe
         pdfUrl.value = data.data.file_url || ''
         if (data.data.title) {

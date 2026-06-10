@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
 import AppTopbar from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const tasks = ref([])
@@ -13,14 +12,13 @@ const isLoading = ref(false)
 async function fetchTasks() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/reviewer/dashboard')
     const data = await res.json()
     if (data.success) {
       // For each task, also attempt to load rubric/scores if review is completed
       const enriched = []
       for (const task of data.data) {
+        const taskLinks = parseLinks(task.links)
         const item = {
           id: task.id,
           manuscript_id: task.manuscript_id,
@@ -36,18 +34,18 @@ async function fetchTasks() {
         // Fetch rubric with submitted scores if completed
         if (task.status === 'Selesai Review') {
           try {
-            const rubRes = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}/rubric`, {
-              headers: authHeaders(false)
-            })
+            // Backend task.links hanya punya get_details, rubric diakses via entry point
+            const rubRes = await fetchEntryPoint(`/reviewer/manuscripts/${task.manuscript_id}/rubric`)
             const rubData = await rubRes.json()
-            if (rubData.success) {
-              // Get manuscript detail for kategori
-              const msRes = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`, {
-                headers: authHeaders(false)
-              })
-              const msData = await msRes.json()
-              if (msData.success && msData.data) {
-                item.kategori = msData.data.book_type || '-'
+            
+            if (rubData && rubData.success) {
+              // Get manuscript detail for kategori via HATEOAS link
+              if (taskLinks['get_details']) {
+                const msRes = await fetchLink(taskLinks['get_details'])
+                const msData = await msRes.json()
+                if (msData.success && msData.data) {
+                  item.kategori = msData.data.book_type || '-'
+                }
               }
               
               // Extract submitted review data
@@ -68,6 +66,17 @@ async function fetchTasks() {
           } catch (err) {
             console.error('Error fetching rubric for', task.manuscript_id, err)
           }
+        } else {
+          // fetch manuscript detail for kategori
+          try {
+            if (taskLinks['get_details']) {
+              const msRes = await fetchLink(taskLinks['get_details'])
+              const msData = await msRes.json()
+              if (msData.success && msData.data) {
+                item.kategori = msData.data.book_type || '-'
+              }
+            }
+          } catch(e) {}
         }
         
         enriched.push(item)

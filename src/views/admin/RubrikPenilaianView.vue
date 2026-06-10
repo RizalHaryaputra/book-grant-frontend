@@ -3,26 +3,20 @@ import { ref, computed } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar   from '../../layouts/shared/AppTopbar.vue'
 
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
+
 // State
 const activeTab = ref('Buku Ajar') // 'Buku Ajar' | 'Buku Referensi'
+const isLoading = ref(true)
 
-// Mock Data
-const rubriks = ref([
-  { id: 1, field: 'q1', type: 'Buku Ajar', name: 'Kesesuaian Kurikulum', description: 'Kesesuaian topik dan cakupan materi dengan kebutuhan kurikulum atau mata kuliah.', weight: 10, status: 'active' },
-  { id: 2, field: 'q2', type: 'Buku Ajar', name: 'Keakuratan Informasi', description: 'Informasi bebas dari kesalahan fakta, diperkuat teori dan data valid.', weight: 15, status: 'active' },
-  { id: 3, field: 'q3', type: 'Buku Ajar', name: 'Kemuhtakhiran Konten', description: 'Memuat informasi terkini sesuai perkembangan ilmu pengetahuan.', weight: 10, status: 'active' },
-  { id: 4, field: 'q4', type: 'Buku Ajar', name: 'Sistematika Penulisan', description: 'Materi tersusun sistematis, logis, dan mudah diikuti alurnya.', weight: 15, status: 'active' },
-  { id: 5, field: 'q5', type: 'Buku Ajar', name: 'Keterbacaan & Bahasa', description: 'Bahasa akademik, jelas, formal, dan konsisten dalam penggunaan istilah.', weight: 15, status: 'active' },
-  { id: 6, field: 'q6', type: 'Buku Ajar', name: 'Kelengkapan Perangkat Ajar', description: 'Dilengkapi capaian pembelajaran, latihan soal, rangkuman, dan glosarium.', weight: 20, status: 'active' },
-  { id: 7, field: 'q7', type: 'Buku Ajar', name: 'Orisinalitas', description: 'Bebas plagiarisme, memberikan kontribusi dan perspektif baru.', weight: 15, status: 'active' }
-])
+// Data from API
+const rubriks = ref([])
 
 const showModal = ref(false)
 const modalMode = ref('add') // 'add' | 'edit'
 const editItem = ref(null)
 
 const form = ref({
-  field: '',
   name: '',
   description: '',
   type: 'Buku Ajar',
@@ -56,9 +50,33 @@ const previewTotalWeightEdit = computed(() => {
 })
 
 // Methods
+async function fetchRubriks() {
+  isLoading.value = true
+  try {
+    const res = await fetchEntryPoint('/admin/rubrics')
+    const data = await res.json()
+    if (data.success) {
+      rubriks.value = data.data.map(r => ({
+        id: r.id,
+        name: r.criteria,
+        description: r.description || '',
+        type: r.book_type,
+        weight: r.weight,
+        status: r.status === 1 ? 'active' : 'inactive',
+        _hateoasLinks: parseLinks(r.links)
+      }))
+    }
+  } catch (err) {
+    console.error('Gagal mengambil data rubrik:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+fetchRubriks()
+
 function openAddModal() {
   form.value = {
-    field: '',
     name: '',
     description: '',
     type: activeTab.value,
@@ -80,24 +98,76 @@ function closeModal() {
   showModal.value = false
 }
 
-function saveForm() {
-  if (modalMode.value === 'add') {
-    rubriks.value.push({
-      id: Date.now(),
-      ...form.value
-    })
-  } else {
-    const idx = rubriks.value.findIndex(r => r.id === editItem.value.id)
-    if (idx !== -1) {
-      rubriks.value[idx] = { ...form.value, id: editItem.value.id }
-    }
+async function saveForm() {
+  const payload = {
+    criteria: form.value.name,
+    book_type: form.value.type,
+    description: form.value.description,
+    weight: form.value.weight,
+    status: form.value.status === 'active' ? 1 : 0
   }
-  closeModal()
+
+  try {
+    if (modalMode.value === 'add') {
+      const res = await fetchEntryPoint('/admin/rubrics', {
+        method: 'POST',
+        body: payload
+      })
+      const data = await res.json()
+      if (!data.success) {
+        alert("Gagal menambahkan: " + (data.message || 'Unknown error'))
+        if (data.errors) console.error(data.errors)
+        return
+      }
+    } else {
+      let res
+      const links = editItem.value._hateoasLinks || {}
+      if (links['update']) {
+        res = await fetchLink(links['update'], { body: payload })
+      } else {
+        res = await fetchEntryPoint(`/admin/rubrics/${editItem.value.id}`, {
+          method: 'PUT',
+          body: payload
+        })
+      }
+      
+      const data = await res.json()
+      if (!data.success) {
+        alert("Gagal memperbarui: " + (data.message || 'Unknown error'))
+        if (data.errors) console.error(data.errors)
+        return
+      }
+    }
+    
+    await fetchRubriks()
+    closeModal()
+  } catch (err) {
+    console.error('Gagal menyimpan rubrik:', err)
+    alert("Terjadi kesalahan koneksi.")
+  }
 }
 
-function deleteRubrik(id) {
-  if(confirm('Yakin ingin menghapus kriteria ini?')) {
-    rubriks.value = rubriks.value.filter(r => r.id !== id)
+async function deleteRubrik(item) {
+  if(!confirm('Yakin ingin menghapus kriteria ini?')) return
+  
+  try {
+    let res
+    const links = item._hateoasLinks || {}
+    if (links['delete']) {
+      res = await fetchLink(links['delete'])
+    } else {
+      res = await fetchEntryPoint(`/admin/rubrics/${item.id}`, { method: 'DELETE' })
+    }
+    
+    const data = await res.json()
+    if (data.success) {
+      await fetchRubriks()
+    } else {
+      alert("Gagal menghapus: " + data.message)
+    }
+  } catch (err) {
+    console.error("Gagal menghapus rubrik:", err)
+    alert("Terjadi kesalahan koneksi.")
   }
 }
 </script>
@@ -146,7 +216,6 @@ function deleteRubrik(id) {
             <table class="rubrik-table">
               <thead>
                 <tr>
-                  <th>FIELD</th>
                   <th>NAMA KRITERIA</th>
                   <th>DESKRIPSI</th>
                   <th>BOBOT</th>
@@ -155,11 +224,13 @@ function deleteRubrik(id) {
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="filteredRubriks.length === 0">
-                  <td colspan="6" class="text-center empty-state">Tidak ada data kriteria.</td>
+                <tr v-if="isLoading">
+                  <td colspan="5" class="text-center empty-state">Memuat data...</td>
+                </tr>
+                <tr v-else-if="filteredRubriks.length === 0">
+                  <td colspan="5" class="text-center empty-state">Tidak ada data kriteria.</td>
                 </tr>
                 <tr v-for="item in filteredRubriks" :key="item.id">
-                  <td><span class="field-badge">{{ item.field }}</span></td>
                   <td class="col-name">{{ item.name }}</td>
                   <td class="col-desc">{{ item.description }}</td>
                   <td><span class="weight-badge">{{ item.weight }}%</span></td>
@@ -173,7 +244,7 @@ function deleteRubrik(id) {
                       <button class="btn-icon" @click="openEditModal(item)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                       </button>
-                      <button class="btn-icon btn-delete" @click="deleteRubrik(item.id)">
+                      <button class="btn-icon btn-delete" @click="deleteRubrik(item)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                       </button>
                     </div>
@@ -194,10 +265,6 @@ function deleteRubrik(id) {
           <p class="modal-subtitle">{{ form.type }} · Sisa bobot: {{ modalMode === 'add' ? remainingWeightAdd : (100 - totalWeightExceptEdit) }}%</p>
         </div>
         <div class="modal-body">
-          <div class="form-group">
-            <label>Nama field (contoh: q1)</label>
-            <input type="text" v-model="form.field" placeholder="q1" class="form-input" />
-          </div>
           <div class="form-group">
             <label>Nama kriteria</label>
             <input type="text" v-model="form.name" placeholder="Kesesuaian Kurikulum" class="form-input" />

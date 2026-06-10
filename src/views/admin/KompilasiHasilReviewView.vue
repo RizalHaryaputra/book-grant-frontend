@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const manuscripts = ref([])
@@ -13,9 +12,7 @@ const isLoading = ref(false)
 async function fetchData() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/admin/manuscripts')
     const data = await res.json()
     if (data.success) {
       // Only show manuscripts that have reviewers assigned
@@ -36,24 +33,33 @@ async function fetchData() {
         }
         
         // Fetch compiled review if available
-        if (['review_completed', 'revised', 'approved'].includes(m.status)) {
+        if (['review_completed', 'revised', 'approved', 'accepted', 'revise'].includes(m.status)) {
           try {
-            const compiledRes = await fetch(`${API_BASE_URL}/manuscripts/${m.id}/compiled-reviews`, {
-              headers: authHeaders(false)
-            })
-            const compiledData = await compiledRes.json()
-            if (compiledData.success && compiledData.data) {
-              const cd = compiledData.data
-              item.rataRataSkor = cd.overall_score + '/100'
-              item.outcome = cd.decision
-              item.detail = {
-                reviewers: (cd.reviewer_feedbacks || []).map(fb => ({
-                  name: fb.reviewer_alias,
-                  skor: fb.score + '/100',
-                  skorAkhir: fb.score + '/100',
-                  outcome: fb.score >= 75 ? 'accepted' : 'rejected',
-                  catatan: fb.feedback || '-'
-                }))
+            // ManuscriptResource menyertakan links per-item, gunakan rel compiled_reviews
+            const msLinks = parseLinks(m.links)
+            let compiledRes = null
+            if (msLinks['compiled_reviews']) {
+              compiledRes = await fetchLink(msLinks['compiled_reviews'])
+            } else {
+              // Fallback: gunakan entry point compiled-reviews
+              compiledRes = await fetchEntryPoint(`/manuscripts/${m.id}/compiled-reviews`)
+            }
+            
+            if (compiledRes) {
+              const compiledData = await compiledRes.json()
+              if (compiledData.success && compiledData.data) {
+                const cd = compiledData.data
+                item.rataRataSkor = cd.overall_score + '/100'
+                item.outcome = cd.decision
+                item.detail = {
+                  reviewers: (cd.reviewer_feedbacks || []).map(fb => ({
+                    name: fb.reviewer_alias,
+                    skor: fb.score + '/100',
+                    skorAkhir: fb.score + '/100',
+                    outcome: fb.score >= 75 ? 'accepted' : 'rejected',
+                    catatan: fb.feedback || '-'
+                  }))
+                }
               }
             }
           } catch (err) {

@@ -47,7 +47,9 @@ export function isAuthenticated() {
  */
 export function authHeaders(withContentType = true) {
   const token = getToken()
-  const headers = {}
+  const headers = {
+    'Accept': 'application/json' // Memaksa Laravel membalas dengan JSON, mencegah 302 Redirect pada error validasi
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`

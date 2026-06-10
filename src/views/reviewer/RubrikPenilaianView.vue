@@ -3,8 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
 import AppTopbar       from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,10 +25,24 @@ const submitError = ref('')
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const totalScore = computed(() => {
-  const vals = Object.values(scores.value)
-  if (vals.length === 0) return 0
-  const sum = vals.reduce((acc, v) => acc + (parseInt(v) || 0), 0)
-  return Math.round((sum / vals.length) * 10) / 10
+  if (rubricList.value.length === 0) return 0
+  
+  let weightedSum = 0
+  let totalWeight = 0
+  
+  rubricList.value.forEach(item => {
+    const score = parseInt(scores.value[item.criteria_id]) || 0
+    // Backend assigns rubric weight to max_score field
+    const weight = parseFloat(item.max_score) || 0
+    
+    weightedSum += (score * weight)
+    totalWeight += weight
+  })
+  
+  if (totalWeight === 0) return 0
+  
+  const finalScore = weightedSum / totalWeight
+  return Math.round(finalScore * 10) / 10
 })
 
 const outcome = computed(() => {
@@ -55,9 +68,7 @@ const canSubmit = computed(() => {
 async function fetchTasks() {
   isLoadingTasks.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/reviewer/dashboard')
     const data = await res.json()
     if (data.success) {
       tasks.value = data.data
@@ -78,32 +89,44 @@ async function loadManuscript(manuscriptId) {
   narrativeFeedback.value = ''
   
   try {
-    // 1. Fetch manuscript details
-    const resDetail = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${manuscriptId}`, {
-      headers: authHeaders(false)
-    })
-    const dataDetail = await resDetail.json()
-    if (dataDetail.success) {
+    // Cari task terkait untuk mendapatkan link
+    const task = tasks.value.find(t => t.manuscript_id == manuscriptId)
+    if (!task) throw new Error('Naskah tidak ditemukan dalam daftar tugas')
+
+    const taskLinks = parseLinks(task.links)
+
+    // 1. Fetch manuscript details via HATEOAS link dari task
+    let dataDetail = null
+    if (taskLinks['get_details']) {
+      const resDetail = await fetchLink(taskLinks['get_details'])
+      dataDetail = await resDetail.json()
+    }
+    
+    if (dataDetail && dataDetail.success) {
       manuscriptDetail.value = dataDetail.data
     }
     
-    // 2. Fetch rubric criteria
-    const resRubric = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${manuscriptId}/rubric`, {
-      headers: authHeaders(false)
-    })
+    // 2. Fetch rubric criteria via entry point
+    const resRubric = await fetchEntryPoint(`/reviewer/manuscripts/${manuscriptId}/rubric`)
     const dataRubric = await resRubric.json()
-    if (dataRubric.success) {
+
+    if (dataRubric && dataRubric.success) {
       rubricList.value = dataRubric.data
       scores.value = {}
       rubricList.value.forEach(item => {
-        // Use submitted_score if available (already reviewed), else 0
         scores.value[item.criteria_id] = item.submitted_score || 0
       })
       
+      // Simpan link submit_review dari response rubric (HATEOAS)
+      const rubricResponseLinks = parseLinks(dataRubric.links)
+      if (rubricResponseLinks['submit_review']) {
+        task._submitReviewLink = rubricResponseLinks['submit_review']
+      }
+
       // If submitted_review exists, this manuscript was already reviewed
       if (dataRubric.submitted_review) {
         narrativeFeedback.value = dataRubric.submitted_review.feedback || ''
-        submitSuccess.value = true // Show success state
+        submitSuccess.value = true
       }
     }
   } catch (err) {
@@ -125,21 +148,44 @@ async function submitAssessment() {
   }))
   
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${selectedManuscriptId.value}/review`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({
-        rubric_scores: rubricScoresPayload,
-        narrative_feedback: narrativeFeedback.value || 'Penilaian dikirim.'
+    const task = tasks.value.find(t => t.manuscript_id == selectedManuscriptId.value)
+    
+    // Gunakan link submit_review yang di-cache dari response rubric (HATEOAS)
+    const reviewLink = task && task._submitReviewLink
+      ? task._submitReviewLink
+      : null
+
+    let res
+    if (reviewLink) {
+      // Gunakan HATEOAS link dari response rubric
+      res = await fetchLink(reviewLink, {
+        body: {
+          rubric_scores: rubricScoresPayload,
+          narrative_feedback: narrativeFeedback.value || 'Penilaian dikirim.'
+        }
       })
-    })
+    } else {
+      // Fallback ke entry point jika link tidak tersedia
+      res = await fetchEntryPoint(`/reviewer/manuscripts/${selectedManuscriptId.value}/review`, {
+        method: 'POST',
+        body: {
+          rubric_scores: rubricScoresPayload,
+          narrative_feedback: narrativeFeedback.value || 'Penilaian dikirim.'
+        }
+      })
+    }
     
     const data = await res.json()
-    if (data.success) {
+    if (data.success || res.ok) {
       submitSuccess.value = true
       await fetchTasks()
     } else {
-      submitError.value = data.message || 'Terjadi kesalahan saat mengirim penilaian.'
+      let errorMsg = data.message || 'Terjadi kesalahan saat mengirim penilaian.'
+      if (data.errors) {
+        const errorDetails = Object.values(data.errors).flat().join(', ')
+        errorMsg += ' Detail: ' + errorDetails
+      }
+      submitError.value = errorMsg
     }
   } catch (err) {
     console.error('Gagal mengirim penilaian:', err)
@@ -258,7 +304,7 @@ onMounted(async () => {
             <!-- Score Indicator -->
             <div class="score-indicator" :class="{ 'indicator-accepted': outcome === 'accepted', 'indicator-rejected': outcome === 'rejected' }">
               <div class="indicator-left">
-                <span class="indicator-label">Bobot Rata-rata</span>
+                <span class="indicator-label">Nilai Akhir</span>
                 <span class="indicator-value">{{ totalScore }}<span class="indicator-max">/100</span></span>
               </div>
               <div class="indicator-right">
@@ -279,7 +325,7 @@ onMounted(async () => {
                 </div>
                 <p class="criteria-desc">{{ criteria.description }}</p>
                 <div class="score-input-wrap">
-                  <label class="score-label">Input Bobot (0-100):</label>
+                  <label class="score-label">Input Nilai (0-100):</label>
                   <input
                     type="number"
                     v-model.number="scores[criteria.criteria_id]"

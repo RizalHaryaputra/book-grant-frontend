@@ -3,8 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
 import AppTopbar from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const tasks = ref([])
@@ -14,9 +13,8 @@ const isLoading = ref(false)
 async function fetchTasks() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`, {
-      headers: authHeaders(false)
-    })
+    // Entry point: satu-satunya tempat yang "tahu" path /reviewer/dashboard
+    const res = await fetchEntryPoint('/reviewer/dashboard')
     const data = await res.json()
     if (data.success) {
       // Fetch category for each task for full info in table
@@ -28,12 +26,14 @@ async function fetchTasks() {
         }
         
         try {
-          const msRes = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`, {
-            headers: authHeaders(false)
-          })
-          const msData = await msRes.json()
-          if (msData.success && msData.data) {
-            item.kategori = msData.data.book_type || '-'
+          // Backend memberikan links sebagai array [{ rel, method, href }]
+          const taskLinks = parseLinks(task.links)
+          if (taskLinks['get_details']) {
+            const msRes = await fetchLink(taskLinks['get_details'])
+            const msData = await msRes.json()
+            if (msData.success && msData.data) {
+              item.kategori = msData.data.book_type || '-'
+            }
           }
         } catch (e) {
           // Ignore individual fetch errors

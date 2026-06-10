@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue'
 import ReviewerSidebar from '../../layouts/reviewer/ReviewerSidebar.vue'
 import AppTopbar       from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const tasks = ref([])
@@ -19,9 +18,7 @@ const manuscriptDetail = ref(null)
 async function fetchTasks() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/reviewer/dashboard`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/reviewer/dashboard')
     const data = await res.json()
     if (data.success) {
       tasks.value = data.data
@@ -44,9 +41,13 @@ async function openDetailModal(task) {
   isLoadingDetail.value = true
   
   try {
-    const resDetail = await fetch(`${API_BASE_URL}/reviewer/manuscripts/${task.manuscript_id}`, {
-      headers: authHeaders(false)
-    })
+    // Backend menyediakan links per-task sebagai array [{ rel, method, href }]
+    const taskLinks = parseLinks(task.links)
+    if (!taskLinks['get_details']) {
+      throw new Error('Link get_details tidak ditemukan pada task')
+    }
+
+    const resDetail = await fetchLink(taskLinks['get_details'])
     const dataDetail = await resDetail.json()
     if (dataDetail.success) {
       manuscriptDetail.value = dataDetail.data

@@ -2,8 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const manuscripts = ref([])
@@ -13,9 +12,8 @@ const isLoading = ref(false)
 async function fetchMonitoringData() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`, {
-      headers: authHeaders(false)
-    })
+    // Entry point: admin manuscripts list (response menyertakan HATEOAS links)
+    const res = await fetchEntryPoint('/admin/manuscripts')
     const data = await res.json()
     if (data.success) {
       // Filter naskah yang sudah diplot tapi belum selesai kompilasi

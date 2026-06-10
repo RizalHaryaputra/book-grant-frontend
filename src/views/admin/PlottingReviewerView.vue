@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from '../../layouts/admin/AdminSidebar.vue'
 import AppTopbar    from '../../layouts/shared/AppTopbar.vue'
-import { API_BASE_URL } from '../../config.js'
-import { authHeaders } from '../../services/auth.js'
+import { fetchEntryPoint, fetchLink, parseLinks } from '../../services/api.js'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const activeFilter           = ref('Semua')
@@ -12,7 +11,7 @@ const selectedRow            = ref(null)
 const modalSelectedReviewers = ref([])
 const modalTenggat           = ref('')   // ← NEW: input tenggat reviewer
 
-const filters = ['Semua', 'Belum diplot', 'Sebagian', 'Lengkap']
+const filters = ['Semua', 'Belum diplot', 'Lengkap']
 
 const allReviewers = ref([])
 const manuscripts = ref([])
@@ -21,9 +20,7 @@ const isLoading = ref(false)
 // ─── Fetch Data ───────────────────────────────────────────────────────────────
 async function fetchReviewers() {
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/reviewers`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/admin/reviewers')
     const data = await res.json()
     if (data.success) {
       allReviewers.value = data.data
@@ -36,16 +33,12 @@ async function fetchReviewers() {
 async function fetchManuscripts() {
   isLoading.value = true
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts`, {
-      headers: authHeaders(false)
-    })
+    const res = await fetchEntryPoint('/admin/manuscripts')
     const data = await res.json()
     if (data.success) {
       manuscripts.value = data.data.map(m => {
         let statusText = 'Belum diplot'
-        if (m.reviewers.length === 1) {
-          statusText = 'Sebagian'
-        } else if (m.reviewers.length >= 2) {
+        if (m.reviewers.length > 0) {
           statusText = 'Lengkap'
         }
         
@@ -55,7 +48,9 @@ async function fetchManuscripts() {
           kategori: m.book_type,
           reviewers: m.reviewers,
           tenggat: m.tenggat || 'Belum diplot',
-          status: statusText
+          status: statusText,
+          // Simpan links dari ManuscriptResource untuk HATEOAS
+          _hateoasLinks: parseLinks(m.links)
         }
       })
     }
@@ -104,19 +99,40 @@ async function saveReviewers() {
   if (!selectedRow.value) return
   const deadlineVal = modalTenggat.value || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   
+  // Deteksi apakah user mencoba mengubah tanggal untuk reviewer yang sudah ada
+  const originalDeadline = toInputDate(selectedRow.value.tenggat)
+  let dateChangedButNoNewReviewers = true
+
   try {
     for (const rv of modalSelectedReviewers.value) {
       const isAlreadyAssigned = selectedRow.value.reviewers.some(r => r.id === rv.id)
       if (!isAlreadyAssigned) {
-        await fetch(`${API_BASE_URL}/admin/manuscripts/${selectedRow.value.id}/assign-reviewer`, {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({
-            reviewer_id: rv.id,
-            deadline: deadlineVal
+        dateChangedButNoNewReviewers = false
+        // ManuscriptResource menyertakan link assign_reviewer di per-item links
+        const msLinks = selectedRow.value._hateoasLinks || {}
+        
+        if (msLinks['assign_reviewer']) {
+          await fetchLink(msLinks['assign_reviewer'], {
+            body: {
+              reviewer_id: rv.id,
+              deadline: deadlineVal
+            }
           })
-        })
+        } else {
+          // Fallback ke entry point
+          await fetchEntryPoint(`/admin/manuscripts/${selectedRow.value.id}/assign-reviewer`, {
+            method: 'POST',
+            body: {
+              reviewer_id: rv.id,
+              deadline: deadlineVal
+            }
+          })
+        }
       }
+    }
+    
+    if (dateChangedButNoNewReviewers && originalDeadline !== '' && originalDeadline !== deadlineVal) {
+      alert("Catatan: Tenggat waktu untuk reviewer yang sudah ditugaskan tidak dapat diubah. Fitur ini belum didukung oleh backend. Silakan hapus reviewer dan tugaskan ulang jika ingin mengubah tenggat waktu.")
     }
     
     await fetchManuscripts()
@@ -128,25 +144,55 @@ async function saveReviewers() {
 }
 async function removeTag(manuscriptId, reviewerId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/admin/manuscripts/${manuscriptId}/remove-reviewer/${reviewerId}?_method=DELETE`, {
-      method: 'POST',
-      headers: authHeaders(false)
-    })
-    const data = await res.json()
-    if (data.success) {
-      await fetchManuscripts()
-      await fetchReviewers()
+    const manuscript = manuscripts.value.find(m => m.id === manuscriptId)
+    
+    const reviewer = manuscript && manuscript.reviewers
+      ? manuscript.reviewers.find(r => r.id === reviewerId)
+      : null
+    const reviewerLinks = reviewer ? parseLinks(reviewer.links) : {}
+    
+    if (reviewerLinks['remove_reviewer']) {
+      // Fix backend typo '{id}' -> actual manuscriptId inside the URL string
+      let href = reviewerLinks['remove_reviewer'].href
+      href = href.replace('%7Bid%7D', manuscriptId).replace('{id}', manuscriptId)
+      
+      const linkToCall = { ...reviewerLinks['remove_reviewer'], href }
+      
+      const res = await fetchLink(linkToCall)
+      const data = await res.json()
+      if (data.success) {
+        await fetchManuscripts()
+        await fetchReviewers()
+      } else {
+        alert("Gagal menghapus: " + (data.message || "Unknown error"))
+      }
+    } else {
+      // Fallback: gunakan entry point DELETE
+      const res = await fetchEntryPoint(`/admin/manuscripts/${manuscriptId}/remove-reviewer/${reviewerId}`, {
+        method: 'DELETE'
+      })
+      const data = await res.json()
+      if (data.success) {
+        await fetchManuscripts()
+        await fetchReviewers()
+      } else {
+        alert("Gagal menghapus: " + (data.message || "Unknown error"))
+      }
     }
   } catch (err) {
     console.error('Gagal menghapus reviewer:', err)
+    alert("Koneksi gagal. Lihat console untuk detail.")
   }
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
-// "5 Juni 2026" → "2026-06-05"
+// "5 Juni 2026" atau "28 May 2026" → "2026-06-05"
 function toInputDate(str) {
-  if (!str) return ''
-  const months = { Januari:1, Februari:2, Maret:3, April:4, Mei:5, Juni:6, Juli:7, Agustus:8, September:9, Oktober:10, November:11, Desember:12 }
+  if (!str || str === 'Belum diplot') return ''
+  const months = { 
+    Januari:1, February:2, Februari:2, March:3, Maret:3, April:4, May:5, Mei:5, June:6, Juni:6, 
+    July:7, Juli:7, August:8, Agustus:8, September:9, October:10, Oktober:10, November:11, December:12, Desember:12 
+  }
   const parts  = str.trim().split(' ')
   if (parts.length !== 3) return ''
   const d = parts[0].padStart(2, '0')
