@@ -7,7 +7,7 @@
     <Sidebar />
 
     <!-- Main Content -->
-    <div class="flex-1 p-8 flex flex-col h-screen overflow-hidden">
+    <div class="flex-1 p-8 flex flex-col h-screen overflow-y-auto custom-scrollbar">
       <!-- Navbar -->
       <TopNavbar title="Dashboard" />
 
@@ -32,3 +32,10 @@ import HeroBanner from "../components/HeroBanner.vue";
 import PieChartCard from "../components/PieChartCard.vue";
 import BarChartCard from "../components/BarChartCard.vue";
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 7px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #B09A8A; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4E3629; }
+</style>

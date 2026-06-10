@@ -5,7 +5,7 @@
   >
     <Sidebar />
 
-    <div class="flex-1 p-8 overflow-y-auto" style="font-family: 'Manrope', sans-serif;">
+    <div class="flex-1 p-8 flex flex-col h-screen overflow-y-auto custom-scrollbar" style="font-family: 'Manrope', sans-serif;">
       <TopNavbar title="Halaman Pengaturan" />
 
       <!-- Main card wrapper -->
@@ -161,3 +161,10 @@ const perbaruiPassword = () => {
   console.log('Perbarui password')
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 7px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #B09A8A; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4E3629; }
+</style>

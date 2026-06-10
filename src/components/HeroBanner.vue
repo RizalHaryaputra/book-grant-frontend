@@ -1,16 +1,16 @@
 <template>
   <section
-    class="relative rounded-[40px] overflow-hidden min-h-[420px] shadow-xl border border-black/15 transition-all duration-300"
+    class="relative rounded-[40px] overflow-hidden min-h-[420px] lg:min-h-[480px] shadow-xl border border-black/15 transition-all duration-300"
     :style="{
       backgroundImage: `linear-gradient(135deg, rgba(35, 30, 27, 0.88) 0%, rgba(48, 41, 36, 0.78) 50%, rgba(24, 21, 19, 0.88) 100%), url('https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1200&q=80')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center 62%'
     }"
   >
-    <div class="p-10 flex flex-col lg:flex-row justify-between items-center h-full gap-10">
+    <div class="p-10 flex flex-col lg:flex-row justify-between items-center lg:h-full gap-10">
 
       <!-- LEFT CONTENT -->
-      <div class="text-white flex-1 flex flex-col justify-between h-full">
+      <div class="text-white flex-1 flex flex-col justify-between lg:h-full">
         <div>
           <p
             class="uppercase tracking-[0.25em] text-[11.5px] font-extrabold text-white/50 mb-7"

@@ -3,7 +3,7 @@
     class="flex flex-col justify-between flex-shrink-0"
     style="
       width: 299px;
-      min-height: 1004px;
+      min-height: 100vh;
       background-color: #FCF9F8;
       padding: 24px;
       border-right: 1px solid rgba(218, 194, 182, 0.10);
