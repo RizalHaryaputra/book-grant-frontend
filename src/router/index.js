@@ -4,9 +4,8 @@ import DaftarNaskah from "../views/DaftarNaskah.vue";
 import Pemeriksaan from "../views/Pemeriksaan.vue";
 import Keputusan from "../views/Keputusan.vue";
 import Rekap from "../views/Rekap.vue";
-import DaftarNaskahPreview from "../views/DaftarNaskahPreview.vue"; // file baru
-import Settings from "../views/Settings.vue"; // file baru
-import Support from "../views/Support.vue"; // file baru
+import DaftarNaskahPreview from "../views/DaftarNaskahPreview.vue";
+import Settings from "../views/Settings.vue";
 
 const routes = [
   {
@@ -20,7 +19,7 @@ const routes = [
     component: DaftarNaskah,
   },
   {
-    path: "/daftar-naskah/:id", // :id = id naskah yang diklik
+    path: "/daftar-naskah/:id",
     name: "daftar-naskah-preview",
     component: DaftarNaskahPreview,
   },
@@ -40,15 +39,10 @@ const routes = [
     component: Rekap,
   },
   {
-  path: "/settings",
-  name: "settings",
-  component: Settings,
-},
-{
-  path: "/support",
-  name: "support",
-  component: Support,
-},
+    path: "/settings",
+    name: "settings",
+    component: Settings,
+  },
 ];
 
 const router = createRouter({

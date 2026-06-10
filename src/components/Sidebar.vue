@@ -1,6 +1,16 @@
 <template>
-  <aside class="w-[260px] bg-white min-h-screen px-6 py-8 flex flex-col justify-between border-r border-[#4E3629]/10 shadow-sm flex-shrink-0">
-
+  <aside
+    class="flex flex-col justify-between flex-shrink-0"
+    style="
+      width: 299px;
+      min-height: 1004px;
+      background-color: #FCF9F8;
+      padding: 24px;
+      border-right: 1px solid rgba(218, 194, 182, 0.10);
+      box-shadow: 10px 4px 20px 0px rgba(139, 69, 19, 0.05);
+      font-family: 'Manrope', sans-serif;
+    "
+  >
     <!-- Logo -->
     <div>
       <div class="mb-8 px-1.5">
@@ -10,7 +20,10 @@
         >
           Sistem PBL
         </h1>
-        <p class="text-[12.5px] text-[#8F8073] font-medium mt-0.5">
+        <p
+          class="text-[12.5px] text-[#8F8073] font-medium mt-0.5"
+          style="font-family: 'Manrope', sans-serif;"
+        >
           Book Grant System
         </p>
       </div>
@@ -28,6 +41,7 @@
                 ? 'bg-[#4E3629] text-white font-semibold shadow-sm'
                 : 'text-[#8F8073] font-medium hover:text-[#4E3629] hover:bg-[#FAF7F2]'
             ]"
+            style="font-family: 'Manrope', sans-serif;"
           >
             <component
               :is="item.icon"
@@ -41,30 +55,26 @@
       </nav>
     </div>
 
-    <!-- Log Out Button — pixel perfect sesuai Figma spec -->
-    <!-- width:250px, height:41px, radius:10px, color:#412E28, shadow: 0 1 5 0 #00000040 -->
-    <button
-      @click="logout"
-      class="w-full flex items-center justify-center gap-3 text-white font-semibold transition-colors duration-200 mt-auto select-none hover:brightness-110"
-      style="
-        height: 41px;
-        border-radius: 10px;
-        background-color: #412E28;
-        box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25);
-        font-family: 'Manrope', sans-serif;
-        font-size: 14.5px;
-      "
-    >
-      <!-- Log-out door icon — sesuai tampilan di desain -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <!-- Door rectangle putih -->
-        <rect x="3" y="2" width="13" height="20" rx="1.5" fill="white"/>
-        <!-- Panah keluar ke kanan -->
-        <path d="M15 12H22M22 12L19 9M22 12L19 15" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>Log Out</span>
-    </button>
-
+    <!-- Log Out Section -->
+    <div style="border-top: 1px solid rgba(218, 194, 182, 0.10); padding-top: 16px; padding-bottom: 0px;">
+      <button
+        @click="logout"
+        class="w-full flex items-center justify-center select-none hover:brightness-110 transition-all duration-200"
+        style="
+          height: 41px;
+          border-radius: 10px;
+          background-color: #412E28;
+          box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25);
+          gap: 8px;
+        "
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <rect x="3" y="2" width="13" height="20" rx="1.5" fill="white"/>
+          <path d="M15 12H22M22 12L19 9M22 12L19 15" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span style="color: #ffffff; font-family: 'Manrope', sans-serif; font-size: 14.5px; font-weight: 600;">Log Out</span>
+      </button>
+    </div>
   </aside>
 </template>
 
@@ -77,7 +87,6 @@ import {
   Users,
   CheckSquare,
   BarChart2,
-  HelpCircle,
   Settings,
 } from 'lucide-vue-next'
 
@@ -90,7 +99,6 @@ const routeMap = {
   Pemeriksaan:  '/pemeriksaan',
   Keputusan:    '/keputusan',
   Rekap:        '/rekap',
-  Support:      '/support',
   Settings:     '/settings',
 }
 
@@ -107,7 +115,6 @@ const navigateTo = (item) => {
 }
 
 const logout = () => {
-  // tambahkan logika logout di sini
   router.push('/login')
 }
 
@@ -117,7 +124,6 @@ const menuItems = [
   { name: 'Pemeriksaan',  label: 'Pemeriksaan',   icon: Users           },
   { name: 'Keputusan',    label: 'Keputusan',     icon: CheckSquare     },
   { name: 'Rekap',        label: 'Rekap',         icon: BarChart2       },
-  { name: 'Support',      label: 'Support',       icon: HelpCircle      },
   { name: 'Settings',     label: 'Settings',      icon: Settings        },
 ]
 </script>
