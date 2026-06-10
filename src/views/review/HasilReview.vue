@@ -6,204 +6,95 @@
 
       <Topbar title="Hasil Review" />
 
-      <div class="review-container">
+      <!-- Loading / Error -->
+      <div v-if="loading" class="state-msg">Memuat hasil review...</div>
+      <div v-else-if="error" class="state-msg error">{{ error }}</div>
+
+      <div v-else-if="reviews.length === 0" class="state-msg">
+        Belum ada hasil review yang tersedia untuk naskah ini.
+      </div>
+
+      <div v-else class="review-container">
 
         <div class="review-header">
           <div>
-            <span class="badge">
-              Hasil Review Editorial
-            </span>
-
-            <h1>Jaringan Komputer Dasar</h1>
-            <p class="author">Oleh Budi</p>
+            <span class="badge">Hasil Review Editorial</span>
+            <h1>{{ manuscript?.title || 'Naskah' }}</h1>
+            <p class="author">{{ manuscript?.category }}</p>
           </div>
 
           <div class="reviewer">
-            <p>Reviewer Utama</p>
-            <h2>Budi Santoso</h2>
-            <span>Senior Editor & Kritikus Sastra</span>
+            <p>Jumlah Reviewer</p>
+            <h2>{{ reviews.length }}</h2>
+            <span>Reviewer anonim</span>
           </div>
         </div>
 
-        <div class="summary-grid">
+        <!-- Ringkasan: Overall Score + Rekomendasi (tampil jika ada data dummy) -->
+        <div v-if="overallScore !== null || recommendation !== null" class="summary-banner">
+          <div class="summary-item" v-if="overallScore !== null">
+            <span class="summary-label">Skor Keseluruhan</span>
+            <span class="summary-value">{{ overallScore }} <small>/ 100</small></span>
+          </div>
+          <div class="summary-divider" v-if="overallScore !== null && recommendation !== null"></div>
+          <div class="summary-item" v-if="recommendation !== null">
+            <span class="summary-label">Rekomendasi</span>
+            <span class="summary-value recommendation">{{ recommendation }}</span>
+          </div>
+        </div>
+
+        <!-- Per-Reviewer Cards -->
+        <div v-for="(rev, idx) in reviews" :key="idx" class="summary-grid" style="margin-top:20px">
 
           <div class="score-card">
-            <p>Skor Keseluruhan</p>
+            <p class="card-label">{{ rev.reviewer_alias ?? 'Reviewer Anonim' }}</p>
 
             <div class="score">
-              4.5
-              <span>/ 5.0</span>
+              {{ rev.score ?? '-' }}
+              <span v-if="rev.score">/ 100</span>
             </div>
 
             <div class="progress">
-              <div class="progress-fill"></div>
+              <div class="progress-fill" :style="{ width: rev.score ? rev.score + '%' : '0%' }"></div>
             </div>
           </div>
 
           <div class="status-card">
-            <p>Status Keputusan</p>
+            <p class="card-label">Komentar Reviewer</p>
+            <p style="margin-top:12px;line-height:1.7;color:#555">{{ rev.feedback || 'Tidak ada catatan.' }}</p>
 
-            <h3>Disetujui dengan Catatan</h3>
-
-            <span>
-              Dianjurkan untuk revisi minor pada transisi bab
-            </span>
+            <div class="review-meta">
+              <div class="meta-row">
+                <span class="meta-label">Status Review</span>
+                <span class="review-status-badge" :class="rev.status === 'completed' ? 'done' : 'pending'">
+                  {{ rev.status === 'completed' ? '✔ Selesai' : rev.status ?? 'Dalam Proses' }}
+                </span>
+              </div>
+              <div class="meta-row" v-if="rev.reviewed_at || rev.created_at">
+                <span class="meta-label">Tanggal Review</span>
+                <span class="meta-value">{{ formatDate(rev.reviewed_at ?? rev.created_at) }}</span>
+              </div>
+            </div>
           </div>
 
         </div>
 
-        <hr />
+        <div class="revision-box" v-if="manuscriptId">
 
-        <section>
-          <h2 class="section-title">
-            Ringkasan Ulasan
-          </h2>
-
-          <div class="summary-box">
-            <p>
-              Naskah "Jaringan Komputer Dasar" menunjukkan kedalaman
-              materi yang solid dan terstruktur dengan baik sebagai
-              buku ajar untuk kalangan mahasiswa teknik informatika
-              maupun sistem informasi.
-            </p>
-
-            <p>
-              Penggunaan ilustrasi diagram jaringan pada setiap bab
-              sangat membantu pemahaman pembaca yang baru mengenal
-              dunia jaringan komputer.
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h2 class="section-title">
-            Komentar Mendalam
-          </h2>
-
-          <div class="review-grid">
-
-            <div class="rating">
-              <span>STRUKTUR & SISTEMATIKA</span>
-              <h3>4.2 ★★★★☆</h3>
-            </div>
-
-            <div class="review-text">
-              Struktur penulisan antar bab sudah runtut dan mengikuti
-              alur pembelajaran yang logis. Namun perpindahan antar
-              topik masih dapat diperhalus agar pembaca lebih mudah
-              mengikuti isi materi.
-            </div>
-
-            <div class="rating">
-              <span>KEDALAMAN MATERI</span>
-              <h3>4.8 ★★★★★</h3>
-            </div>
-
-            <div class="review-text">
-              Pembahasan topik-topik inti seperti IP, subnetting,
-              routing dan protokol jaringan dijelaskan secara
-              komprehensif dengan contoh yang relevan.
-            </div>
-
-            <div class="rating">
-              <span>BAHASA & PENYAJIAN</span>
-              <h3>4.6 ★★★★★</h3>
-            </div>
-
-            <div class="review-text">
-              Bahasa yang digunakan lugas, teknis namun tetap mudah
-              dipahami oleh pembaca pemula.
-            </div>
-
-            <div class="rating">
-              <span>POTENSI KOMERSIAL</span>
-              <h3>4.4 ★★★★☆</h3>
-            </div>
-
-            <div class="review-text">
-              Buku ini memiliki potensi adopsi yang tinggi sebagai
-              referensi wajib pada mata kuliah Jaringan Komputer.
-            </div>
-
-          </div>
-        </section>
-
-        <div class="recommendation-box">
-
-          <h2>
-            Rekomendasi & Langkah Selanjutnya
-          </h2>
-
-          <div class="recommend-item">
-            <div class="number">1</div>
-
-            <div>
-              <h4>Perbaikan Transisi Antar Bab</h4>
-
-              <p>
-                Tambahkan subbab ringkasan dan pratinjau di akhir
-                setiap bab.
-              </p>
-            </div>
-          </div>
-
-          <div class="recommend-item">
-            <div class="number">2</div>
-
-            <div>
-              <h4>Penambahan Contoh Kasus Praktis</h4>
-
-              <p>
-                Perbanyak studi kasus nyata dan latihan berbasis
-                skenario jaringan.
-              </p>
-            </div>
-          </div>
-
-          <div class="recommend-item">
-            <div class="number">3</div>
-
-            <div>
-              <h4>Sinopsis Pemasaran</h4>
-
-              <p>
-                Susun sinopsis ringkas yang menonjolkan keunggulan
-                buku sebagai referensi komprehensif.
-              </p>
-            </div>
-          </div>
-
-          <div class="action-buttons">
-            <button class="primary-btn">
-              Unduh Laporan Lengkap (PDF)
-            </button>
-
-            <button class="secondary-btn">
-              Hubungi Reviewer
-            </button>
-          </div>
-
-        </div>
-
-        <div class="revision-box">
-
-          <div class="revision-icon">
-            📄
-          </div>
+          <div class="revision-icon">📄</div>
 
           <div class="revision-content">
-            <h3>Lihat Draf Revisi</h3>
+            <h3>Kirim Revisi</h3>
 
             <p>
-              Buka editor untuk mulai menerapkan saran revisi
-              dari reviewer langsung pada naskah Anda.
+              Terapkan saran dari reviewer dan unggah revisi naskah Anda.
             </p>
 
             <router-link
-              to="/upload-revisi"
+              :to="`/revisi-naskah/${manuscriptId}`"
               class="editor-link"
             >
-              Buka Editor Naskah →
+              Upload Revisi →
             </router-link>
           </div>
 
@@ -215,8 +106,64 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import Sidebar from '../../components/Sidebar.vue'
 import Topbar from '../../components/Topbar.vue'
+import { useApi } from '@/composables/useApi'
+
+const props = defineProps({
+  manuscriptId: {
+    type: [String, Number],
+    required: true
+  }
+})
+
+const reviews = ref([])
+const manuscript = ref(null)
+const overallScore = ref(null)
+const recommendation = ref(null)
+const loading = ref(true)
+const error = ref(null)
+const { getReviews, getManuscriptDetail } = useApi()
+
+onMounted(async () => {
+  try {
+    const [reviewRes, detailRes] = await Promise.allSettled([
+      getReviews(props.manuscriptId),
+      getManuscriptDetail(props.manuscriptId),
+    ])
+
+    if (reviewRes.status === 'fulfilled') {
+      const data = reviewRes.value.data.data
+
+      // Struktur dummy: data.reviews, data.overall_score, data.recommendation
+      // Struktur real:  data langsung array
+      if (Array.isArray(data)) {
+        reviews.value = data
+      } else if (data?.reviews) {
+        reviews.value        = data.reviews
+        overallScore.value   = data.overall_score ?? null
+        recommendation.value = data.recommendation ?? null
+      } else {
+        reviews.value = []
+      }
+    } else {
+      const err = reviewRes.reason
+      if (err.response?.status === 403) error.value = 'Anda tidak memiliki akses ke naskah ini.'
+      else if (err.response?.status === 404) error.value = 'Naskah tidak ditemukan.'
+      else error.value = 'Gagal memuat hasil review.'
+    }
+
+    if (detailRes.status === 'fulfilled') {
+      manuscript.value = detailRes.value.data.data ?? detailRes.value.data
+    }
+  } finally {
+    loading.value = false
+  }
+})
+const formatDate = (d) => d
+  ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  : '-'
 </script>
 
 <style scoped>
@@ -230,6 +177,19 @@ import Topbar from '../../components/Topbar.vue'
 .content{
   flex:1;
   padding:24px;
+}
+
+.state-msg{
+  margin-top:30px;
+  padding:20px;
+  text-align:center;
+  color:#888;
+}
+
+.state-msg.error{
+  color:#c0392b;
+  background:#fde8e8;
+  border-radius:12px;
 }
 
 .review-container{
@@ -256,7 +216,7 @@ import Topbar from '../../components/Topbar.vue'
 
 .review-header h1{
   margin-top:16px;
-  font-size:48px;
+  font-size:40px;
   color:#32261e;
 }
 
@@ -277,8 +237,18 @@ import Topbar from '../../components/Topbar.vue'
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px;
-  margin-top:30px;
 }
+
+.card-label{ font-weight:600; color:#555; margin-bottom:4px; }
+
+.review-meta{ margin-top:20px; border-top:1px solid #f0ece7; padding-top:14px; display:flex; flex-direction:column; gap:10px; }
+.meta-row{ display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+.meta-label{ color:#999; }
+.meta-value{ color:#333; font-weight:500; }
+
+.review-status-badge{ padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.review-status-badge.done{ background:#d7f0df; color:#4f8b61; }
+.review-status-badge.pending{ background:#ffe5cf; color:#c56d2d; }
 
 .score-card,
 .status-card{
@@ -305,91 +275,10 @@ import Topbar from '../../components/Topbar.vue'
 }
 
 .progress-fill{
-  width:90%;
   height:100%;
   background:#b88763;
   border-radius:10px;
-}
-
-.section-title{
-  margin-top:40px;
-  margin-bottom:20px;
-  color:#32261e;
-}
-
-.summary-box{
-  border:1px solid #e5ddd4;
-  padding:24px;
-  line-height:1.9;
-}
-
-.review-grid{
-  display:grid;
-  grid-template-columns:260px 1fr;
-  gap:24px;
-}
-
-.rating span{
-  font-size:11px;
-  letter-spacing:2px;
-  color:#8d8378;
-}
-
-.rating h3{
-  margin-top:10px;
-  font-size:30px;
-}
-
-.review-text{
-  background:#f7f4ef;
-  padding:24px;
-  line-height:1.8;
-}
-
-.recommendation-box{
-  background:#eef4e8;
-  padding:30px;
-  border-radius:10px;
-  margin-top:40px;
-}
-
-.recommend-item{
-  display:flex;
-  gap:18px;
-  margin-top:24px;
-}
-
-.number{
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  background:#60724e;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.action-buttons{
-  display:flex;
-  gap:16px;
-  margin-top:30px;
-}
-
-.primary-btn{
-  background:#4f2f1d;
-  color:white;
-  border:none;
-  padding:14px 24px;
-  cursor:pointer;
-}
-
-.secondary-btn{
-  background:white;
-  border:1px solid #60724e;
-  color:#60724e;
-  padding:14px 24px;
-  cursor:pointer;
+  transition:width 0.5s;
 }
 
 .revision-box{
@@ -398,22 +287,80 @@ import Topbar from '../../components/Topbar.vue'
   padding:24px;
   display:flex;
   gap:24px;
+  border-radius:12px;
 }
 
 .revision-icon{
-  width:100px;
-  height:120px;
+  width:80px;
+  height:80px;
   background:#e5e2dc;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:42px;
+  font-size:36px;
+  border-radius:10px;
 }
 
 .editor-link{
   color:#32261e;
   font-weight:600;
   text-decoration:none;
+  display:block;
+  margin-top:10px;
 }
 
+</style>
+
+<style scoped>
+/* Tambahan style untuk summary banner overall score & rekomendasi */
+.summary-banner {
+  display: flex;
+  gap: 0;
+  border: 1px solid #e5ddd4;
+  border-radius: 12px;
+  margin-top: 24px;
+  overflow: hidden;
+}
+
+.summary-item {
+  flex: 1;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #faf7f3;
+}
+
+.summary-divider {
+  width: 1px;
+  background: #e5ddd4;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #999;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #32261e;
+}
+
+.summary-value small {
+  font-size: 14px;
+  color: #888;
+  font-weight: 400;
+}
+
+.summary-value.recommendation {
+  font-size: 16px;
+  color: #b8630a;
+  background: #fff3e0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  width: fit-content;
+}
 </style>

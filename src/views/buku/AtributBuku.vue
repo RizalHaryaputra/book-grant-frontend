@@ -1,599 +1,245 @@
 <template>
   <div class="atribut-page">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-
-      <div>
-
-        <div class="logo">
-          <h1>Sistem PBL</h1>
-          <p>Book Grant System</p>
-        </div>
-
-        <nav class="menu">
-
-          <router-link
-            to="/"
-            class="menu-item"
-          >
-            Dashboard
-          </router-link>
-
-          <router-link
-            to="/buku-saya"
-            class="menu-item active"
-          >
-            Buku Saya
-          </router-link>
-
-          <router-link
-            to="/daftar-reviewer"
-            class="menu-item"
-          >
-            Daftar Reviewer
-          </router-link>
-
-          <a href="#" class="menu-item">
-            Hibah Disetujui
-          </a>
-
-          <a href="#" class="menu-item">
-            Hasil Evaluasi
-          </a>
-
-          <a href="#" class="menu-item">
-            Support
-          </a>
-
-          <a href="#" class="menu-item">
-            Settings
-          </a>
-
-        </nav>
-
-      </div>
-
-      <button class="logout-btn">
-        Log Out
-      </button>
-
-    </aside>
-
-    <!-- Main -->
+    <Sidebar />
     <main class="main-content">
 
-      <!-- Topbar -->
       <div class="topbar">
-
-        <div class="breadcrumb">
-          Drafts > Atribut Buku
-        </div>
-
-        <div class="top-right">
-
-          <input
-            type="text"
-            placeholder="Cari naskah..."
-          />
-
-          <img
-            src="https://i.pravatar.cc/40"
-            alt=""
-          />
-
-        </div>
-
+        <div class="breadcrumb">Manuskrip Baru › Unggah Draf Awal › Verifikasi Draf › Atribut Buku</div>
+        <img src="https://i.pravatar.cc/40" alt="" />
       </div>
 
-      <!-- Form Card -->
-      <section class="form-card">
+      <div v-if="!draftFileMeta" class="error-msg">
+        Data draf tidak ditemukan.
+        <button @click="router.push('/upload-draft')">← Kembali Unggah Draf</button>
+      </div>
 
-        <span class="mini-breadcrumb">
-          Manuscripts > Atribut Buku
-        </span>
+      <template v-else>
+        <section class="form-card">
+          <span class="mini-breadcrumb">Langkah 3 dari 3</span>
+          <h1>Atribut Buku</h1>
+          <p class="desc">
+            Lengkapi metadata buku. Data ini digunakan reviewer, penerbit, dan admin dalam proses kurasi.
+          </p>
 
-        <h1>Atribut Buku</h1>
-
-        <p class="desc">
-          Lengkapi data atribut buku Anda untuk mempermudah proses
-          kurasi dan publikasi oleh dewan editor kami.
-        </p>
-
-        <!-- Form -->
-        <div class="form-box">
-
-          <div class="grid-form">
-
-            <!-- Jenis Buku -->
-            <div class="form-group">
-
-              <label>
-                Jenis Buku *
-              </label>
-
-              <select>
-                <option>
-                  Pilih jenis naskah
-                </option>
-              </select>
-
+          <!-- Ringkasan file -->
+          <div class="file-summary">
+            <span class="file-icon-sm">📄</span>
+            <div>
+              <strong>{{ draftFileMeta.name }}</strong>
+              <p>{{ formatFileSize(draftFileMeta.size) }} • {{ draftFileMeta.type.includes('pdf') ? 'PDF' : 'DOCX' }}</p>
             </div>
-
-            <!-- Judul -->
-            <div class="form-group">
-
-              <label>
-                Judul Buku *
-              </label>
-
-              <input
-                type="text"
-                placeholder="Masukkan judul lengkap"
-              />
-
-            </div>
-
-            <!-- Bidang -->
-            <div class="form-group">
-
-              <label>
-                Bidang Ilmu
-              </label>
-
-              <input
-                type="text"
-                placeholder="E.g. Filsafat, Teknologi, Sejarah"
-              />
-
-              <small>
-                Pisahkan dengan koma.
-              </small>
-
-            </div>
-
+            <button class="change-file-btn" @click="router.push('/upload-draft')">Ganti File</button>
           </div>
 
-          <!-- Deskripsi -->
-          <div class="textarea-group">
+          <div class="form-box">
+            <div class="grid-form">
 
-            <label>
-              Abstrak / Deskripsi *
-            </label>
+              <!-- Jenis Buku -->
+              <div class="form-group">
+                <label>Jenis Buku *</label>
+                <select v-model="form.book_type">
+                  <option value="">Pilih jenis naskah</option>
+                  <option value="Buku Ajar">Buku Ajar</option>
+                  <option value="Buku Referensi">Referensi</option>
+                </select>
+                <span class="field-error" v-if="errors.book_type">{{ errors.book_type }}</span>
+              </div>
 
-            <textarea
-              placeholder="Tuliskan ringkasan buku Anda di sini..."
-            ></textarea>
+              <!-- Judul -->
+              <div class="form-group">
+                <label>Judul Buku *</label>
+                <input type="text" v-model="form.title" placeholder="Masukkan judul lengkap" />
+                <span class="field-error" v-if="errors.title">{{ errors.title }}</span>
+              </div>
 
-            <div class="textarea-footer">
+              <!-- Bidang Ilmu -->
+              <div class="form-group">
+                <label>Bidang Ilmu *</label>
+                <select v-model="form.science_field">
+                  <option value="">Pilih bidang ilmu</option>
+                  <option value="Ilmu Komputer">Ilmu Komputer</option>
+                  <option value="Teknik Informatika">Teknik Informatika</option>
+                  <option value="Matematika">Matematika</option>
+                  <option value="Fisika">Fisika</option>
+                  <option value="Bahasa & Sastra">Bahasa &amp; Sastra</option>
+                  <option value="Ekonomi">Ekonomi</option>
+                  <option value="Hukum">Hukum</option>
+                  <option value="Kedokteran">Kedokteran</option>
+                  <option value="Pendidikan">Pendidikan</option>
+                  <option value="Sosial & Politik">Sosial &amp; Politik</option>
+                </select>
+                <span class="field-error" v-if="errors.science_field">{{ errors.science_field }}</span>
+              </div>
 
-              <span>
-                Minimal 200 kata untuk kurasi optimal.
-              </span>
 
-              <span>
-                0 / 1000 kata
-              </span>
+              <!-- Jumlah Halaman -->
+              <div class="form-group">
+                <label>Jumlah Halaman (Estimasi) *</label>
+                <input type="number" v-model="form.total_pages" placeholder="Estimasi jumlah halaman" min="1" />
+                <span class="field-error" v-if="errors.total_pages">{{ errors.total_pages }}</span>
+              </div>
 
             </div>
 
-          </div>
-
-          <!-- Halaman -->
-          <div class="page-group">
-
-            <label>
-              Jumlah Halaman *
-            </label>
-
-            <div class="page-input">
-
-              <span>
-                Halaman Estimasi
-              </span>
-
-              <input
-                type="number"
-                placeholder="0"
-              />
-
+            <!-- Abstrak -->
+            <div class="textarea-group">
+              <label>Abstrak / Deskripsi * <span class="optional">(min. 10 karakter)</span></label>
+              <textarea v-model="form.abstract" placeholder="Tuliskan ringkasan buku Anda di sini..."></textarea>
+              <div class="textarea-footer">
+                <span class="field-error" v-if="errors.abstract">{{ errors.abstract }}</span>
+                <span :class="{ 'char-warn': form.abstract.length < 10 && form.abstract.length > 0 }" style="margin-left:auto">
+                  {{ form.abstract.length }} karakter (min. 10)
+                </span>
+              </div>
             </div>
 
-          </div>
+            <div class="error-msg" v-if="submitError">{{ submitError }}</div>
+            <div class="success-msg" v-if="submitSuccess">✅ Manuskrip berhasil dikirim! Mengarahkan ke dasbor...</div>
 
-          <!-- Buttons -->
-          <div class="button-group">
-
-            <div class="left-btn">
-
-<router-link
-  to="/upload-draft"
-  class="save-btn"
->
-  Simpan Perubahan
-</router-link>
-              <button class="cancel-btn">
-                Batal
+            <div class="button-group">
+              <div>
+                <button class="cancel-btn" @click="router.push('/verifikasi-draft')" :disabled="loading">← Kembali</button>
+              </div>
+              <button class="save-btn" @click="handleSubmit" :disabled="loading || submitSuccess">
+                <span v-if="loading">Mengirim...</span>
+                <span v-else>Kirim Manuskrip</span>
               </button>
-
             </div>
-
-            <div class="auto-save">
-              Draft Tersimpan Otomatis
-            </div>
-
           </div>
-
-        </div>
-
-        <!-- Info Cards -->
-        <div class="info-grid">
-
-          <!-- Card -->
-          <div class="info-card">
-
-            <div class="info-icon">
-              📖
-            </div>
-
-            <h3>Metadata Kuat</h3>
-
-            <p>
-              Isian yang akurat membantu algoritma pencarian kami
-              menempatkan karya Anda di depan audiens yang tepat.
-            </p>
-
-          </div>
-
-          <!-- Card -->
-          <div class="info-card">
-
-            <div class="info-icon">
-              ✍
-            </div>
-
-            <h3>Abstrak Jelas</h3>
-
-            <p>
-              Fokus pada 'hook' utama cerita atau argumen inti non-fiksi
-              Anda pada 100 kata pertama.
-            </p>
-
-          </div>
-
-          <!-- Card -->
-          <div class="info-card">
-
-            <div class="info-icon">
-              🛡
-            </div>
-
-            <h3>Etika Literasi</h3>
-
-            <p>
-              Pastikan semua atribut mencerminkan isi naskah
-              yang sebenarnya untuk menjaga integritas penulis.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
+        </section>
+      </template>
 
     </main>
-
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import Sidebar from '@/components/Sidebar.vue'
+import { useApi } from '@/composables/useApi'
+
+const router = useRouter()
+const { createDraft } = useApi()
+
+const draftFileMeta = ref(null)
+
+const form = ref({
+  book_type      : '',
+  title          : '',
+  science_field : '',
+  total_pages: '',
+  abstract       : '',
+})
+
+const errors        = ref({})
+const loading       = ref(false)
+const submitError   = ref(null)
+const submitSuccess = ref(false)
+
+onMounted(() => {
+  const raw = sessionStorage.getItem('draftFile')
+  if (raw) {
+    try { draftFileMeta.value = JSON.parse(raw) }
+    catch { draftFileMeta.value = null }
+  }
+})
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+function validate() {
+  const e = {}
+  if (!form.value.book_type)                          e.book_type       = 'Jenis buku wajib dipilih.'
+  if (!form.value.title.trim())                       e.title           = 'Judul buku wajib diisi.'
+  if (!form.value.science_field)                     e.science_field  = 'Bidang ilmu wajib dipilih.'
+  
+  if (!form.value.total_pages || form.value.total_pages < 1)
+                                                      e.total_pages = 'Jumlah halaman harus lebih dari 0.'
+  
+  if (!form.value.abstract.trim())                    e.abstract        = 'Abstrak wajib diisi.'
+  else if (form.value.abstract.trim().length < 10)   e.abstract        = 'Abstrak minimal 10 karakter.'
+  return e
+}
+
+async function handleSubmit() {
+  errors.value      = validate()
+  submitError.value = null
+
+  if (Object.keys(errors.value).length) return
+
+  const draftFile = window.__draftFile
+  if (!draftFile) {
+    submitError.value = 'File draf tidak ditemukan. Silakan unggah ulang.'
+    return
+  }
+
+  loading.value = true
+  try {
+    // POST /api/manuscripts – kirim metadata + file sekaligus (PRD 6.2)
+    const formData = new FormData()
+
+    formData.append('file_draft', draftFile)
+    formData.append('title', form.value.title)
+    formData.append('book_type', form.value.book_type)
+    formData.append('science_field', form.value.science_field)
+    formData.append('total_pages', form.value.total_pages)
+    formData.append('abstract', form.value.abstract)
+
+    const res = await createDraft(formData)
+    if (!res.data.success) throw new Error(res.data.message)
+
+    sessionStorage.removeItem('draftFile')
+    delete window.__draftFile
+
+    submitSuccess.value = true
+    setTimeout(() => router.push('/'), 1800)
+  } catch (err) {
+    const msg = err.response?.data?.message || err.message
+    submitError.value = 'Gagal mengirim: ' + msg
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI', sans-serif;
-}
-
-.atribut-page{
-  display:flex;
-  min-height:100vh;
-  background:#e9dfd2;
-}
-
-/* Sidebar */
-
-.sidebar{
-  width:240px;
-  background:#f5f1eb;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-
-.logo h1{
-  font-size:36px;
-  color:#3b2e28;
-}
-
-.logo p{
-  color:#666;
-  font-size:14px;
-}
-
-.menu{
-  margin-top:40px;
-}
-
-.menu-item{
-  display:block;
-  text-decoration:none;
-  padding:15px 18px;
-  border-radius:12px;
-  margin-bottom:12px;
-  color:#6a594d;
-}
-
-.menu-item:hover{
-  background:white;
-}
-
-.active{
-  background:#6a564a;
-  color:white;
-}
-
-.logout-btn{
-  background:#5a4031;
-  color:white;
-  border:none;
-  padding:16px;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-/* Main */
-
-.main-content{
-  flex:1;
-  padding:20px;
-}
-
-/* Topbar */
-
-.topbar{
-  background:#f6f1e9;
-  padding:18px 25px;
-  border-radius:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
-}
-
-.breadcrumb{
-  color:#75685e;
-}
-
-.top-right{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-
-.top-right input{
-  padding:12px 18px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  width:260px;
-}
-
-.top-right img{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-}
-
-/* Form Card */
-
-.form-card{
-  background:white;
-  border-radius:22px;
-  padding:35px;
-}
-
-.mini-breadcrumb{
-  color:#777;
-  font-size:13px;
-}
-
-.form-card h1{
-  font-size:48px;
-  margin:15px 0;
-  color:#35261d;
-}
-
-.desc{
-  color:#666;
-  width:700px;
-  line-height:1.7;
-  margin-bottom:30px;
-}
-
-/* Form Box */
-
-.form-box{
-  border:1px solid #e5ddd3;
-  border-radius:16px;
-  padding:35px;
-  margin-bottom:35px;
-}
-
-.grid-form{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:25px;
-  margin-bottom:30px;
-}
-
-.form-group label{
-  display:block;
-  margin-bottom:10px;
-  font-weight:600;
-  color:#35261d;
-}
-
-.form-group input,
-.form-group select{
-  width:100%;
-  padding:16px;
-  border-radius:10px;
-  border:1px solid #d7d7d7;
-  outline:none;
-  font-size:15px;
-}
-
-.form-group small{
-  display:block;
-  margin-top:8px;
-  color:#888;
-  font-size:12px;
-}
-
-/* Textarea */
-
-.textarea-group{
-  margin-bottom:30px;
-}
-
-.textarea-group label{
-  display:block;
-  margin-bottom:10px;
-  font-weight:600;
-}
-
-.textarea-group textarea{
-  width:100%;
-  height:220px;
-  border-radius:12px;
-  border:1px solid #d7d7d7;
-  padding:20px;
-  resize:none;
-  outline:none;
-  font-size:15px;
-}
-
-.textarea-footer{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-  color:#777;
-  font-size:13px;
-}
-
-/* Page */
-
-.page-group{
-  margin-bottom:35px;
-}
-
-.page-group label{
-  display:block;
-  margin-bottom:15px;
-  font-weight:600;
-}
-
-.page-input{
-  display:flex;
-  align-items:center;
-  gap:20px;
-}
-
-.page-input span{
-  color:#666;
-}
-
-.page-input input{
-  width:120px;
-  padding:14px;
-  border-radius:10px;
-  border:1px solid #d7d7d7;
-}
-
-/* Buttons */
-
-.button-group{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-top:1px solid #eee;
-  padding-top:30px;
-}
-
-.left-btn{
-  display:flex;
-  gap:15px;
-}
-
-.save-btn{
-  background:#5a4031;
-  color:white;
-  border:none;
-  padding:16px 28px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.cancel-btn{
-  background:#6c5446;
-  color:white;
-  border:none;
-  padding:16px 28px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.auto-save{
-  background:#d9ebc5;
-  color:#60774c;
-  padding:12px 20px;
-  border-radius:30px;
-  font-size:14px;
-}
-
-/* Info Grid */
-
-.info-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-}
-
-.info-card{
-  background:#f8f5f1;
-  border:1px solid #e5ddd3;
-  border-radius:14px;
-  padding:25px;
-}
-
-.info-icon{
-  font-size:28px;
-  margin-bottom:18px;
-}
-
-.info-card h3{
-  font-size:24px;
-  margin-bottom:15px;
-  color:#35261d;
-}
-
-.info-card p{
-  color:#666;
-  line-height:1.8;
-}
-
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+.atribut-page{ display:flex; min-height:100vh; background:#e9dfd2; }
+.main-content{ flex:1; padding:20px; }
+.topbar{ background:#f6f1e9; padding:18px 25px; border-radius:18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.breadcrumb{ color:#75685e; font-size:14px; }
+.topbar img{ width:42px; height:42px; border-radius:50%; }
+.error-msg{ background:#fdecea; color:#c0392b; padding:15px 20px; border-radius:12px; margin-bottom:20px; display:flex; align-items:center; gap:12px; }
+.error-msg button{ background:none; border:1px solid #c0392b; color:#c0392b; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px; }
+.success-msg{ background:#d7f0df; color:#2e7d32; padding:15px 20px; border-radius:12px; margin-bottom:20px; font-weight:500; }
+.form-card{ background:white; border-radius:22px; padding:35px; }
+.mini-breadcrumb{ color:#888; font-size:13px; }
+.form-card h1{ font-size:40px; margin:12px 0; color:#35261d; }
+.desc{ color:#666; max-width:700px; line-height:1.7; margin-bottom:20px; }
+.file-summary{ display:flex; align-items:center; gap:14px; border:1px solid #d8eed0; background:#f4faf1; border-radius:12px; padding:16px 20px; margin-bottom:25px; }
+.file-icon-sm{ font-size:30px; }
+.file-summary strong{ font-size:15px; color:#35261d; }
+.file-summary p{ color:#777; font-size:13px; margin-top:3px; }
+.change-file-btn{ margin-left:auto; background:none; border:1px solid #8b4a16; color:#8b4a16; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:13px; }
+.form-box{ border:1px solid #e5ddd3; border-radius:16px; padding:35px; }
+.grid-form{ display:grid; grid-template-columns:repeat(2,1fr); gap:25px; margin-bottom:30px; }
+.span-2{ grid-column:1/-1; }
+.form-group label{ display:block; margin-bottom:8px; font-weight:600; color:#35261d; }
+.optional{ font-weight:400; color:#999; font-size:13px; }
+.form-group input,.form-group select{ width:100%; padding:14px; border-radius:10px; border:1px solid #d7d7d7; outline:none; font-size:15px; }
+.field-error{ display:block; margin-top:5px; color:#c0392b; font-size:12px; }
+.textarea-group{ margin-bottom:30px; }
+.textarea-group label{ display:block; margin-bottom:8px; font-weight:600; }
+.textarea-group textarea{ width:100%; height:200px; border-radius:12px; border:1px solid #d7d7d7; padding:18px; resize:none; outline:none; font-size:15px; }
+.textarea-footer{ display:flex; justify-content:space-between; margin-top:8px; color:#777; font-size:13px; align-items:flex-start; }
+.char-warn{ color:#e67e22 !important; }
+.button-group{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:25px; }
+.save-btn{ background:#5a4031; color:white; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-size:15px; }
+.save-btn:hover:not(:disabled){ background:#7a5041; }
+.cancel-btn{ background:#ccc; color:#333; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-size:15px; }
+.save-btn:disabled,.cancel-btn:disabled{ opacity:.6; cursor:not-allowed; }
 </style>

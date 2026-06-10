@@ -2,767 +2,354 @@
   <div class="buku-page">
 
     <!-- Sidebar -->
-    <aside class="sidebar">
-
-      <div>
-
-        <div class="logo">
-          <h1>Sistem PBL</h1>
-          <p>Book Grant System</p>
-        </div>
-
-        <nav class="menu">
-
-          <router-link to="/" class="menu-item">
-            Dashboard
-          </router-link>
-
-          <router-link
-            to="/buku-saya"
-            class="menu-item active"
-          >
-            Buku Saya
-          </router-link>
-
-          <router-link
-            to="/daftar-reviewer"
-            class="menu-item"
-          >
-            Daftar Reviewer
-          </router-link>
-
-          <a href="#" class="menu-item">
-            Hibah Disetujui
-          </a>
-
-          <a href="#" class="menu-item">
-            Hasil Review
-          </a>
-
-          <a href="#" class="menu-item">
-            Support
-          </a>
-
-          <a href="#" class="menu-item">
-            Settings
-          </a>
-
-        </nav>
-
-      </div>
-
-      <button class="logout-btn">
-        Log Out
-      </button>
-
-    </aside>
+    <Sidebar />
 
     <!-- Main -->
     <main class="main-content">
 
       <!-- Topbar -->
-      <div class="topbar">
+      <Topbar title="Buku Saya" placeholder="Cari naskah..." />
 
-        <h2>Buku Saya</h2>
+      <!-- Loading / Error -->
+      <div v-if="loading" class="info-msg">Memuat data manuskrip...</div>
+      <div v-else-if="error" class="error-msg">{{ error }}</div>
 
-        <div class="search-box">
-          <input
-            type="text"
-            placeholder="Cari Naskah..."
-          />
-        </div>
-
-        <div class="profile">
-
-          <div class="profile-text">
-            <h4>Hafizh</h4>
-            <p>Penulis</p>
-          </div>
-
-          <img
-            src="https://i.pravatar.cc/40"
-            alt=""
-          />
-
-        </div>
-
-      </div>
-
-      <!-- Content -->
-      <section class="library-card">
+      <section v-else class="library-card">
 
         <div class="library-header">
-
           <div>
-
             <h1>Perpustakaan Pribadi Anda</h1>
-
-            <p>
-              Kelola dan pantau semua manuskrip yang sedang Anda kerjakan.
-              Ruang tenang untuk karya-karya hebat yang sedang tumbuh.
-            </p>
-
+            <p>Kelola dan pantau semua manuskrip yang sedang Anda kerjakan.</p>
           </div>
-
-          <router-link to="/atribut-buku" class="btn-upload">
-  Mulai Manuskrip Baru
-</router-link>
-
+          <button class="btn-upload" @click="mulaiManuskrip">
+            + Mulai Manuskrip Baru
+          </button>
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-
-          <button class="tab active-tab">
-            Semua (12)
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="tab"
+            :class="{ 'active-tab': activeTab === tab.key }"
+            @click="activeTab = tab.key"
+          >
+            {{ tab.label }} ({{ countByTab(tab.key) }})
           </button>
+        </div>
 
-          <button class="tab">
-            Draf (5)
-          </button>
-
-          <button class="tab">
-            Dalam Review (4)
-          </button>
-
-          <button class="tab">
-            Diterbitkan (3)
-          </button>
-
+        <!-- Empty state -->
+        <div v-if="filteredManuscripts.length === 0" class="empty-state">
+          <div class="plus-box" @click="mulaiManuskrip" style="cursor:pointer">+</div>
+          <h4>Belum ada manuskrip</h4>
+          <p>Klik "Mulai Manuskrip Baru" untuk menambahkan naskah pertama Anda.</p>
         </div>
 
         <!-- Grid -->
-        <div class="book-grid">
+        <div v-else class="book-grid">
 
-          <!-- Card -->
-          <div class="book-card">
-
+          <div
+            class="book-card"
+            v-for="ms in filteredManuscripts"
+            :key="ms.id"
+            @click="router.push(`/detail-buku/${ms.id}`)"
+            style="cursor:pointer"
+          >
             <div class="book-top">
-
-              <img
-                src="https://images-na.ssl-images-amazon.com/images/I/81kqrwS1nNL.jpg"
-                alt=""
-              />
-
+              <div class="book-cover">📖</div>
               <div class="book-info">
-
-                <span class="status review">
-                  DALAM REVIEW
+                <span class="status" :class="statusClass(ms.status)">
+                  {{ formatStatus(ms.status) }}
                 </span>
-
-                <h3>Jaringan Komputer Dasar</h3>
-
-                <p>Buku Ajar</p>
-
+                <h3>{{ ms.title }}</h3>
+                <p>{{ ms.book_type }}</p>
+                <p class="science">{{ ms.science_field }}</p>
               </div>
-
             </div>
 
             <div class="progress-section">
-
               <div class="progress-header">
-
-                <span>Progress Penulisan</span>
-                <span>75%</span>
-
+                <span>Total Halaman</span>
+                <span>{{ ms.total_pages ?? '-' }} hal</span>
               </div>
-
               <div class="progress-bar">
-
                 <div
-                  class="progress-fill brown"
-                  style="width:75%"
-                ></div>
-
-              </div>
-
-            </div>
-
-            <div class="book-footer">
-
-              <span>Diupdate 2 hari lalu</span>
-
-              <div class="avatars">
-
-                <img
-                  src="https://i.pravatar.cc/30?img=12"
-                  alt=""
-                />
-
-                <img
-                  src="https://i.pravatar.cc/30?img=15"
-                  alt=""
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <!-- Card -->
-          <div class="book-card">
-
-            <div class="book-top">
-
-              <img
-                src="https://images-na.ssl-images-amazon.com/images/I/71XESK0l4-L.jpg"
-                alt=""
-              />
-
-              <div class="book-info">
-
-                <span class="status draft">
-                  DRAF
-                </span>
-
-                <h3>Pemrograman Web Digital</h3>
-
-                <p>Buku Ajar</p>
-
-              </div>
-
-            </div>
-
-            <div class="progress-section">
-
-              <div class="progress-header">
-
-                <span>Progress Penulisan</span>
-                <span>32%</span>
-
-              </div>
-
-              <div class="progress-bar">
-
-                <div
-                  class="progress-fill gray"
-                  style="width:32%"
-                ></div>
-
-              </div>
-
-            </div>
-
-            <div class="book-footer">
-
-              <span>Diupdate 5 jam lalu</span>
-
-              <span>Belum ada reviewer</span>
-
-            </div>
-
-          </div>
-
-          <!-- Card -->
-          <div class="book-card">
-
-            <div class="book-top">
-
-              <img
-                src="https://images-na.ssl-images-amazon.com/images/I/71g2ednj0JL.jpg"
-                alt=""
-              />
-
-              <div class="book-info">
-
-                <span class="status published">
-                  DITERBITKAN
-                </span>
-
-                <h3>Struktur Data</h3>
-
-                <p>Buku Referensi</p>
-
-              </div>
-
-            </div>
-
-            <div class="progress-section">
-
-              <div class="progress-header">
-
-                <span>Status</span>
-                <span>SELESAI</span>
-
-              </div>
-
-              <div class="progress-bar">
-
-                <div
-                  class="progress-fill green"
+                  class="progress-fill"
+                  :class="progressColor(ms.status)"
                   style="width:100%"
                 ></div>
-
               </div>
-
             </div>
 
             <div class="book-footer">
-
-              <span>1.2k Pembaca</span>
-
-              <span>Lihat Statistik →</span>
-
+              <span>{{ formatDate(ms.created_at) }}</span>
+              <span class="id-tag">#{{ ms.id }}</span>
             </div>
-
           </div>
 
-          <!-- Card -->
-          <div class="book-card">
-
-            <div class="book-top">
-
-              <img
-                src="https://images-na.ssl-images-amazon.com/images/I/81iqZ2HHD-L.jpg"
-                alt=""
-              />
-
-              <div class="book-info">
-
-                <span class="status review">
-                  DALAM REVIEW
-                </span>
-
-                <h3>Pemrograman Berorientasi</h3>
-
-                <p>Buku Ajar</p>
-
-              </div>
-
-            </div>
-
-            <div class="progress-section">
-
-              <div class="progress-header">
-
-                <span>Progress Penulisan</span>
-                <span>90%</span>
-
-              </div>
-
-              <div class="progress-bar">
-
-                <div
-                  class="progress-fill brown"
-                  style="width:90%"
-                ></div>
-
-              </div>
-
-            </div>
-
-            <div class="book-footer">
-
-              <span>Diupdate 1 minggu lalu</span>
-
-              <span class="review-tag">
-                3 Review Baru
-              </span>
-
-            </div>
-
-          </div>
-
-          <!-- New Project -->
-          <div class="new-project-card">
-
-            <div class="plus-box">
-              +
-            </div>
-
+          <!-- Card tambah baru -->
+          <div class="new-project-card" @click="mulaiManuskrip">
+            <div class="plus-box">+</div>
             <h4>Mulai Proyek Baru</h4>
-
-            <p>
-              Tuangkan ide Anda ke dalam manuskrip digital baru sekarang.
-            </p>
-
+            <p>Tuangkan ide Anda ke dalam manuskrip digital baru.</p>
           </div>
 
         </div>
 
       </section>
 
-    </main>
 
+    </main>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import Sidebar from '@/components/Sidebar.vue'
+import Topbar from '@/components/Topbar.vue'
+import { useApi } from '@/composables/useApi'
+
+const router = useRouter()
+const { getDashboard } = useApi()
+
+const manuscripts    = ref([])
+const loading        = ref(true)
+const error          = ref(null)
+const activeTab      = ref('semua')
+
+
+const tabs = [
+  { key: 'semua',   label: 'Semua' },
+  { key: 'draft',   label: 'Draf' },
+  { key: 'review',  label: 'Dalam Review' },
+  { key: 'selesai', label: 'Diterbitkan' },
+]
+
+onMounted(async () => {
+  try {
+    const res = await getDashboard()
+
+    
+    if (!res.data.success) throw new Error(res.data.message)
+    manuscripts.value = res.data.data.history ?? []
+  } catch (e) {
+    error.value = 'Gagal memuat data: ' + (e.response?.data?.message || e.message)
+  } finally {
+    loading.value = false
+  }
+  console.log(manuscripts.value.map(m => m.status))
+})
+
+const filteredManuscripts = computed(() => {
+  let list = manuscripts.value
+
+  if (activeTab.value !== 'semua') {
+    list = list.filter(ms => {
+
+      if (activeTab.value === 'draft') {
+        return [
+          'initial_draft_uploaded'
+        ].includes(ms.status)
+      }
+
+      if (activeTab.value === 'review') {
+        return [
+          'reviewer_assigned',
+          'under_review',
+          'review_completed',
+          'revision_requested',
+          'revision_uploaded'
+        ].includes(ms.status)
+      }
+
+      if (activeTab.value === 'selesai') {
+        return [
+          'publisher_revised',
+          'ready_to_print'
+        ].includes(ms.status)
+      }
+
+      return true
+    })
+  }
+
+  return list
+})
+
+function countByTab(key) {
+
+  if (key === 'semua')
+    return manuscripts.value.length
+
+  if (key === 'draft')
+    return manuscripts.value.filter(
+      m => ['initial_draft_uploaded'].includes(m.status)
+    ).length
+
+  if (key === 'review')
+    return manuscripts.value.filter(
+      m => [
+        'reviewer_assigned',
+        'under_review',
+        'review_completed',
+        'revision_requested',
+        'revision_uploaded'
+      ].includes(m.status)
+    ).length
+
+  if (key === 'selesai')
+    return manuscripts.value.filter(
+      m => [
+        'publisher_revised',
+        'ready_to_print'
+      ].includes(m.status)
+    ).length
+
+  return 0
+}
+
+function formatStatus(status) {
+  const map = {
+    contract_validated      : 'KONTRAK DISETUJUI',
+    initial_draft_uploaded  : 'DRAF',
+    reviewer_assigned       : 'DALAM REVIEW',
+    review_completed        : 'REVIEW SELESAI',
+    revision_requested      : 'PERLU REVISI',
+    revision_uploaded       : 'REVISI DIKIRIM',
+    preprint                : 'PRA-CETAK',
+    publisher_revised       : 'PERLU PERBAIKAN',
+    ready_to_print          : 'SIAP CETAK',
+    approved                : 'DISETUJUI',
+    published               : 'DITERBITKAN',
+  }
+  return map[status] ?? status.toUpperCase()
+}
+
+function statusClass(status) {
+
+  if (
+    [
+      'ready_to_print'
+    ].includes(status)
+  ) return 'published'
+
+  if (
+    [
+      'reviewer_assigned',
+      'under_review',
+      'review_completed',
+      'revision_uploaded'
+    ].includes(status)
+  ) return 'review'
+
+  if (
+    [
+      'revision_requested',
+      'publisher_revised'
+    ].includes(status)
+  ) return 'revision'
+
+  return 'draft'
+}
+
+function progressColor(status) {
+
+  if (
+    [
+      'ready_to_print'
+    ].includes(status)
+  ) return 'green'
+
+  if (
+    [
+      'reviewer_assigned',
+      'under_review',
+      'review_completed',
+      'revision_uploaded'
+    ].includes(status)
+  ) return 'brown'
+
+  if (
+    [
+      'revision_requested',
+      'publisher_revised'
+    ].includes(status)
+  ) return 'brown'
+
+  return 'gray'
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  })
+}
+
+function mulaiManuskrip() {
+  sessionStorage.removeItem('atributBuku')
+  router.push('/upload-draft')
+}
 </script>
 
 <style scoped>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI', sans-serif;
-}
-
-.buku-page{
-  display:flex;
-  min-height:100vh;
-  background:#e8ded3;
-}
-
-/* Sidebar */
-
-.sidebar{
-  width:240px;
-  background:#f5f1eb;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-
-.logo h1{
-  font-size:38px;
-  color:#3b2e28;
-}
-
-.logo p{
-  font-size:14px;
-  color:#666;
-}
-
-.menu{
-  margin-top:40px;
-}
-
-.menu-item{
-  display:block;
-  padding:15px 18px;
-  border-radius:12px;
-  text-decoration:none;
-  margin-bottom:12px;
-  color:#6d5c4f;
-  transition:0.3s;
-}
-
-.menu-item:hover{
-  background:white;
-}
-
-.active{
-  background:#6b564b;
-  color:white;
-}
-
-.btn-upload{
-  background: #6b4b3e;
-  color: white;
-  padding: 16px 28px;
-  border-radius: 14px;
-  text-decoration: none;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.2s;
-}
-
-.btn-upload:hover{
-  background: #5a3d31;
-}
-
-.logout-btn{
-  border:none;
-  background:#5c4033;
-  color:white;
-  padding:16px;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:15px;
-}
-
-/* Main */
-
-.main-content{
-  flex:1;
-  padding:20px;
-}
-
-/* Topbar */
-
-.topbar{
-  background:white;
-  border-radius:18px;
-  padding:18px 25px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:20px;
-}
-
-.topbar h2{
-  font-size:30px;
-}
-
-.search-box{
-  flex:1;
-  margin:0 40px;
-}
-
-.search-box input{
-  width:100%;
-  padding:12px 18px;
-  border:none;
-  background:#f5f1eb;
-  border-radius:12px;
-  outline:none;
-}
-
-.profile{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.profile-text{
-  text-align:right;
-}
-
-.profile-text h4{
-  font-size:14px;
-}
-
-.profile-text p{
-  font-size:12px;
-  color:gray;
-}
-
-.profile img{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-}
-
-/* Library */
-
-.library-card{
-  background:white;
-  border-radius:22px;
-  padding:30px;
-}
-
-.library-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:30px;
-}
-
-.library-header h1{
-  font-size:48px;
-  margin-bottom:10px;
-  color:#2f2f2f;
-}
-
-.library-header p{
-  color:#666;
-  line-height:1.6;
-  width:700px;
-}
-
-.new-btn{
-  background:#5b3d2d;
-  color:white;
-  text-decoration:none;
-  padding:18px 26px;
-  border-radius:14px;
-  font-size:15px;
-}
-
-/* Tabs */
-
-.tabs{
-  display:flex;
-  gap:30px;
-  margin-bottom:30px;
-  border-bottom:1px solid #ddd;
-  padding-bottom:14px;
-}
-
-.tab{
-  border:none;
-  background:none;
-  font-size:15px;
-  cursor:pointer;
-  color:#666;
-}
-
-.active-tab{
-  color:#2f2f2f;
-  border-bottom:3px solid #5b3d2d;
-  padding-bottom:10px;
-}
-
-/* Grid */
-
-.book-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:22px;
-}
-
-/* Card */
-
-.book-card{
-  border:1px solid #e7e7e7;
-  border-radius:16px;
-  padding:20px;
-}
-
-.book-top{
-  display:flex;
-  gap:18px;
-  margin-bottom:22px;
-}
-
-.book-top img{
-  width:90px;
-  height:120px;
-  object-fit:cover;
-  border-radius:10px;
-}
-
-.book-info h3{
-  font-size:22px;
-  line-height:1.4;
-  margin-bottom:8px;
-  color:#2f2f2f;
-}
-
-.book-info p{
-  color:#777;
-}
-
-.status{
-  display:inline-block;
-  padding:7px 12px;
-  border-radius:8px;
-  font-size:11px;
-  margin-bottom:16px;
-}
-
-.review{
-  background:#ffe2cf;
-  color:#c26b2d;
-}
-
-.draft{
-  background:#ececec;
-  color:#666;
-}
-
-.published{
-  background:#d7f0df;
-  color:#4f8b61;
-}
-
-/* Progress */
-
-.progress-section{
-  margin-bottom:20px;
-}
-
-.progress-header{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-size:14px;
-}
-
-.progress-bar{
-  width:100%;
-  height:8px;
-  background:#ddd;
-  border-radius:20px;
-}
-
-.progress-fill{
-  height:100%;
-  border-radius:20px;
-}
-
-.brown{
-  background:#7c3f13;
-}
-
-.gray{
-  background:#8e8e8e;
-}
-
-.green{
-  background:#667b53;
-}
-
-/* Footer */
-
-.book-footer{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:13px;
-  color:#777;
-}
-
-.avatars{
-  display:flex;
-}
-
-.avatars img{
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  margin-left:-8px;
-}
-
-.review-tag{
-  background:#ffe2cf;
-  padding:6px 10px;
-  border-radius:8px;
-  color:#7c3f13;
-  font-size:11px;
-}
-
-/* New Project */
-
-.new-project-card{
-  border:2px dashed #d8c9bb;
-  border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  padding:40px;
-}
-
-.plus-box{
-  width:70px;
-  height:70px;
-  border-radius:16px;
-  background:#f3eee9;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:40px;
-  color:#8d7a6d;
-  margin-bottom:20px;
-}
-
-.new-project-card h4{
-  font-size:24px;
-  margin-bottom:12px;
-  color:#4a3a31;
-}
-
-.new-project-card p{
-  color:#777;
-  line-height:1.6;
-}
-
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+.buku-page{ display:flex; min-height:100vh; background:#e8ded3; }
+
+.main-content{ flex:1; padding:20px; }
+
+.info-msg{ padding:20px; color:#666; }
+.error-msg{ padding:20px; color:#c0392b; background:#fdecea; border-radius:12px; }
+
+.library-card{ background:white; border-radius:22px; padding:30px; }
+.library-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; }
+.library-header h1{ font-size:40px; margin-bottom:10px; color:#2f2f2f; }
+.library-header p{ color:#666; line-height:1.6; max-width:600px; }
+
+.btn-upload{ background:#6b4b3e; color:white; border:none; padding:16px 24px; border-radius:14px; font-size:15px; cursor:pointer; white-space:nowrap; }
+.btn-upload:hover{ background:#5a3d31; }
+
+.tabs{ display:flex; gap:25px; margin-bottom:25px; border-bottom:1px solid #ddd; padding-bottom:14px; }
+.tab{ border:none; background:none; font-size:15px; cursor:pointer; color:#888; padding-bottom:10px; }
+.active-tab{ color:#2f2f2f; border-bottom:3px solid #5b3d2d; font-weight:600; }
+
+.empty-state{ text-align:center; padding:60px 20px; }
+.empty-state h4{ font-size:22px; margin:15px 0 10px; color:#4a3a31; }
+.empty-state p{ color:#888; }
+
+.book-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+
+.book-card{ border:1px solid #e7e7e7; border-radius:16px; padding:20px; transition:.2s; }
+.book-card:hover{ box-shadow:0 4px 16px rgba(0,0,0,.08); border-color:#c8b9aa; }
+.book-top{ display:flex; gap:16px; margin-bottom:20px; }
+.book-cover{ font-size:52px; width:80px; display:flex; align-items:center; justify-content:center; background:#f5f0ea; border-radius:10px; }
+.book-info{ flex:1; }
+.book-info h3{ font-size:18px; line-height:1.4; margin-bottom:6px; color:#2f2f2f; }
+.book-info p{ color:#777; font-size:14px; }
+.science{ font-size:12px !important; color:#aaa !important; margin-top:3px; }
+
+.status{ display:inline-block; padding:5px 10px; border-radius:8px; font-size:11px; margin-bottom:12px; font-weight:600; }
+.draft{ background:#ececec; color:#666; }
+.review{ background:#ffe2cf; color:#c26b2d; }
+.revision{ background:#fef3cd; color:#856404; }
+.published{ background:#d7f0df; color:#4f8b61; }
+
+.progress-section{ margin-bottom:18px; }
+.progress-header{ display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:#666; }
+.progress-bar{ width:100%; height:7px; background:#eee; border-radius:20px; }
+.progress-fill{ height:100%; border-radius:20px; }
+.brown{ background:#7c3f13; }
+.gray{ background:#aaa; }
+.green{ background:#667b53; }
+
+.book-footer{ display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#888; }
+.id-tag{ background:#f3eee9; padding:4px 10px; border-radius:8px; font-size:12px; }
+
+.new-project-card{ border:2px dashed #d8c9bb; border-radius:16px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:40px; cursor:pointer; transition:.2s; }
+.new-project-card:hover{ background:#fdf9f5; }
+.plus-box{ width:65px; height:65px; border-radius:16px; background:#f3eee9; display:flex; justify-content:center; align-items:center; font-size:38px; color:#8d7a6d; margin-bottom:18px; }
+.new-project-card h4{ font-size:20px; margin-bottom:10px; color:#4a3a31; }
+.new-project-card p{ color:#888; line-height:1.6; font-size:14px; }
 </style>

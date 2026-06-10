@@ -1,474 +1,184 @@
 <template>
   <div class="upload-page">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-
-      <div>
-
-        <div class="logo">
-          <h1>Sistem PBL</h1>
-          <p>Book Grant System</p>
-        </div>
-
-        <nav class="menu">
-
-          <router-link to="/" class="menu-item">
-            Dashboard
-          </router-link>
-
-          <router-link
-            to="/buku-saya"
-            class="menu-item active"
-          >
-            Buku Saya
-          </router-link>
-
-          <router-link
-            to="/daftar-reviewer"
-            class="menu-item"
-          >
-            Daftar Reviewer
-          </router-link>
-
-          <a href="#" class="menu-item">
-            Hibah Disetujui
-          </a>
-
-          <a href="#" class="menu-item">
-            Hasil Evaluasi
-          </a>
-
-          <a href="#" class="menu-item">
-            Support
-          </a>
-
-          <a href="#" class="menu-item">
-            Settings
-          </a>
-
-        </nav>
-
-      </div>
-
-      <button class="logout-btn">
-        Log Out
-      </button>
-
-    </aside>
-
-    <!-- Main -->
+    <Sidebar />
     <main class="main-content">
 
-      <!-- Topbar -->
       <div class="topbar">
-
-        <div class="breadcrumb">
-          Drafts > Unggah Draf Awal
-        </div>
-
-        <div class="top-right">
-
-          <input
-            type="text"
-            placeholder="Cari naskah..."
-          />
-
-          <img
-            src="https://i.pravatar.cc/40"
-            alt=""
-          />
-
-        </div>
-
+        <div class="breadcrumb">Manuskrip Baru › Unggah Draf Awal</div>
+        <img src="https://i.pravatar.cc/40" alt="" />
       </div>
 
-      <!-- Card -->
       <section class="upload-card">
-
+        <span class="mini-breadcrumb">Langkah 1 dari 3</span>
         <h1>Unggah Draf Awal</h1>
-
         <p class="desc">
-          Selamat datang di tahap awal publikasi.
-          Pastikan draf Anda sudah matang sebelum dikirim
-          ke editor untuk proses review literasi pertama.
+          Unggah file naskah Anda dalam format PDF atau DOCX (maks. 50 MB).
+          Pastikan nama file tidak mengandung karakter khusus.
         </p>
 
-        <!-- Book -->
-        <div class="book-box">
-
-          <div class="book-left">
-
-            <img
-              src="https://images-na.ssl-images-amazon.com/images/I/81kqrwS1nNL.jpg"
-              alt=""
-            />
-
-            <div>
-
-              <h3>Jaringan Komputer Dasar</h3>
-              <p>ID: LI-2024-0892</p>
-
-            </div>
-
-          </div>
-
-          <div class="status">
-            KONTRAK VALID
-          </div>
-
-        </div>
-
-        <!-- Upload -->
+        <!-- Upload File -->
         <div class="upload-section">
-
-          <label>File Naskah</label>
-
-          <div class="upload-box">
-
-            <div class="upload-icon">
-              ☁
-            </div>
-
-            <p>
-              Ketuk atau seret file untuk memilih
-            </p>
-
-            <span>
-              Format .pdf atau .docx (Maks. 25MB)
-            </span>
-
-          </div>
-
-        </div>
-
-        <!-- Textarea -->
-        <div class="editor-note">
-
-          <label>
-            Catatan untuk Editor (Opsional)
-          </label>
-
-          <textarea
-            placeholder="Berikan konteks tambahan atau bagian tertentu yang ingin Anda fokuskan..."
-          ></textarea>
-
-        </div>
-
-        <!-- Confirm -->
-        <div class="confirm-box">
-
-          <input type="checkbox" />
-
-          <p>
-            Saya mengonfirmasi bahwa naskah ini adalah karya asli saya,
-            tidak mengandung plagiarisme, dan belum pernah diterbitkan
-            sebelumnya secara komersial.
-          </p>
-
-        </div>
-
-        <!-- Buttons -->
-        <div class="button-group">
-
-          <button class="save-btn">
-            Simpan Draf
-          </button>
-
-          <router-link
-            to="/verifikasi-draft"
-            class="upload-btn"
+          <label>File Naskah *</label>
+          <div
+            class="upload-box"
+            :class="{ 'has-file': selectedFile, 'drag-over': isDragging }"
+            @click="triggerFileInput"
+            @dragover.prevent="isDragging = true"
+            @dragleave="isDragging = false"
+            @drop.prevent="handleDrop"
           >
-            Unggah Sekarang
-          </router-link>
-
+            <template v-if="!selectedFile">
+              <div class="upload-icon">☁</div>
+              <p>Ketuk atau seret file untuk memilih</p>
+              <span>Format .pdf atau .docx (Maks. 50 MB)</span>
+            </template>
+            <template v-else>
+              <div class="file-preview">
+                <span class="file-icon">📄</span>
+                <div>
+                  <strong>{{ selectedFile.name }}</strong>
+                  <p>{{ formatFileSize(selectedFile.size) }}</p>
+                </div>
+                <button class="remove-file" @click.stop="removeFile">✕</button>
+              </div>
+            </template>
+          </div>
+          <input ref="fileInput" type="file" accept=".pdf,.docx" style="display:none" @change="handleFileChange" />
+          <span class="field-error" v-if="errors.file">{{ errors.file }}</span>
         </div>
 
+        <!-- Konfirmasi -->
+        <div class="confirm-box" :class="{ confirmed }">
+          <input type="checkbox" id="confirm-check" v-model="confirmed" />
+          <label for="confirm-check">
+            Saya mengonfirmasi bahwa naskah ini adalah karya asli saya,
+            tidak mengandung plagiarisme, dan belum pernah diterbitkan sebelumnya secara komersial.
+          </label>
+        </div>
+        <span class="field-error" v-if="errors.confirmed">{{ errors.confirmed }}</span>
+
+        <div class="button-group">
+          <button class="cancel-btn" @click="router.push('/')">Batal</button>
+          <button class="upload-btn" @click="handleLanjut">Lanjut ke Verifikasi →</button>
+        </div>
       </section>
 
     </main>
-
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Sidebar from '@/components/Sidebar.vue'
+
+const router = useRouter()
+
+const fileInput    = ref(null)
+const selectedFile = ref(null)
+const isDragging   = ref(false)
+const confirmed    = ref(false)
+const errors       = ref({})
+
+const INVALID_CHARS = /[<>:"/\\|?*\x00-\x1f]/
+
+function triggerFileInput() { fileInput.value?.click() }
+
+function handleFileChange(e) {
+  const file = e.target.files[0]
+  if (file) setFile(file)
+}
+
+function handleDrop(e) {
+  isDragging.value = false
+  const file = e.dataTransfer.files[0]
+  if (file) setFile(file)
+}
+
+function setFile(file) {
+  const allowed = ['application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  errors.value.file = null
+
+  if (!allowed.includes(file.type)) {
+    errors.value.file = 'Format file tidak didukung. Gunakan .docx atau .pdf.'
+    return
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    errors.value.file = 'Ukuran file melebihi batas 50 MB.'
+    return
+  }
+  if (INVALID_CHARS.test(file.name)) {
+    errors.value.file = 'Nama file mengandung karakter yang tidak diizinkan.'
+    return
+  }
+  selectedFile.value = file
+}
+
+function removeFile() {
+  selectedFile.value = null
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+function validate() {
+  const e = {}
+  if (!selectedFile.value) e.file      = 'File naskah wajib diunggah.'
+  if (!confirmed.value)    e.confirmed = 'Anda harus menyetujui pernyataan ini.'
+  return e
+}
+
+function handleLanjut() {
+  errors.value = validate()
+  if (Object.keys(errors.value).length) return
+
+  sessionStorage.setItem('draftFile', JSON.stringify({
+    name: selectedFile.value.name,
+    size: selectedFile.value.size,
+    type: selectedFile.value.type,
+  }))
+  window.__draftFile = selectedFile.value
+  router.push('/verifikasi-draft')
+}
 </script>
 
 <style scoped>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI', sans-serif;
-}
-
-.upload-page{
-  display:flex;
-  min-height:100vh;
-  background:#e9dfd2;
-}
-
-/* Sidebar */
-
-.sidebar{
-  width:240px;
-  background:#f5f1eb;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-
-.logo h1{
-  font-size:36px;
-  color:#3b2e28;
-}
-
-.logo p{
-  color:#666;
-  font-size:14px;
-}
-
-.menu{
-  margin-top:40px;
-}
-
-.menu-item{
-  display:block;
-  text-decoration:none;
-  padding:15px 18px;
-  border-radius:12px;
-  margin-bottom:12px;
-  color:#6a594d;
-}
-
-.menu-item:hover{
-  background:white;
-}
-
-.active{
-  background:#6a564a;
-  color:white;
-}
-
-.logout-btn{
-  background:#5a4031;
-  color:white;
-  border:none;
-  padding:16px;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-/* Main */
-
-.main-content{
-  flex:1;
-  padding:20px;
-}
-
-/* Topbar */
-
-.topbar{
-  background:#f6f1e9;
-  padding:18px 25px;
-  border-radius:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
-}
-
-.breadcrumb{
-  color:#75685e;
-}
-
-.top-right{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-
-.top-right input{
-  padding:12px 18px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  width:260px;
-}
-
-.top-right img{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-}
-
-/* Card */
-
-.upload-card{
-  background:white;
-  border-radius:22px;
-  padding:35px;
-}
-
-.upload-card h1{
-  font-size:48px;
-  color:#34261f;
-  margin-bottom:12px;
-}
-
-.desc{
-  color:#6f6f6f;
-  width:700px;
-  line-height:1.7;
-  margin-bottom:25px;
-}
-
-/* Book */
-
-.book-box{
-  border:1px solid #e5e5e5;
-  border-left:4px solid #60774c;
-  border-radius:12px;
-  padding:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:30px;
-}
-
-.book-left{
-  display:flex;
-  gap:18px;
-  align-items:center;
-}
-
-.book-left img{
-  width:70px;
-  height:95px;
-  object-fit:cover;
-  border-radius:8px;
-}
-
-.book-left h3{
-  font-size:28px;
-  color:#34261f;
-}
-
-.book-left p{
-  color:#777;
-  margin-top:8px;
-}
-
-.status{
-  background:#d8e8c7;
-  color:#5f754a;
-  padding:10px 18px;
-  border-radius:30px;
-  font-size:13px;
-}
-
-/* Upload */
-
-.upload-section{
-  margin-bottom:25px;
-}
-
-.upload-section label{
-  display:block;
-  margin-bottom:12px;
-  font-weight:600;
-}
-
-.upload-box{
-  border:1px solid #ddd;
-  background:#f8f6f2;
-  border-radius:12px;
-  height:230px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-}
-
-.upload-icon{
-  font-size:45px;
-  margin-bottom:15px;
-}
-
-.upload-box p{
-  font-size:20px;
-  margin-bottom:8px;
-}
-
-.upload-box span{
-  color:#777;
-}
-
-/* Textarea */
-
-.editor-note{
-  margin-bottom:25px;
-}
-
-.editor-note label{
-  display:block;
-  margin-bottom:12px;
-  font-weight:600;
-}
-
-.editor-note textarea{
-  width:100%;
-  height:140px;
-  border:1px solid #ddd;
-  border-radius:12px;
-  padding:18px;
-  resize:none;
-  outline:none;
-  font-size:15px;
-}
-
-/* Confirm */
-
-.confirm-box{
-  display:flex;
-  gap:15px;
-  border:1px solid #ddd;
-  background:#f7f3ee;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:30px;
-}
-
-.confirm-box p{
-  color:#666;
-  line-height:1.7;
-}
-
-/* Buttons */
-
-.button-group{
-  display:flex;
-  justify-content:flex-end;
-  gap:15px;
-}
-
-.save-btn{
-  background:#6b564a;
-  color:white;
-  border:none;
-  padding:16px 30px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.upload-btn{
-  background:#3f2617;
-  color:white;
-  text-decoration:none;
-  padding:16px 30px;
-  border-radius:10px;
-}
-
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+.upload-page{ display:flex; min-height:100vh; background:#e9dfd2; }
+.main-content{ flex:1; padding:20px; }
+.topbar{ background:#f6f1e9; padding:18px 25px; border-radius:18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.breadcrumb{ color:#75685e; font-size:14px; }
+.topbar img{ width:42px; height:42px; border-radius:50%; }
+.upload-card{ background:white; border-radius:22px; padding:35px; }
+.mini-breadcrumb{ color:#888; font-size:13px; }
+.upload-card h1{ font-size:40px; color:#34261f; margin:12px 0; }
+.desc{ color:#6f6f6f; max-width:700px; line-height:1.7; margin-bottom:25px; }
+.upload-section{ margin-bottom:25px; }
+.upload-section label{ display:block; margin-bottom:10px; font-weight:600; }
+.upload-box{ border:2px dashed #ddd; background:#f8f6f2; border-radius:12px; height:200px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; cursor:pointer; transition:.2s; }
+.upload-box:hover,.upload-box.drag-over{ border-color:#8b4a16; background:#fdf5ef; }
+.upload-box.has-file{ border-style:solid; border-color:#60774c; background:#f2f7ee; }
+.upload-icon{ font-size:45px; margin-bottom:12px; }
+.upload-box p{ font-size:18px; margin-bottom:6px; }
+.upload-box span{ color:#777; font-size:14px; }
+.file-preview{ display:flex; align-items:center; gap:16px; padding:0 20px; }
+.file-icon{ font-size:36px; }
+.file-preview strong{ display:block; font-size:15px; }
+.file-preview p{ color:#666; font-size:13px; margin-top:4px; }
+.remove-file{ background:none; border:none; font-size:18px; color:#999; cursor:pointer; margin-left:auto; }
+.remove-file:hover{ color:#c0392b; }
+.field-error{ display:block; margin-top:5px; color:#c0392b; font-size:12px; }
+.confirm-box{ display:flex; gap:14px; align-items:flex-start; border:1px solid #ddd; background:#f7f3ee; padding:18px; border-radius:12px; margin-bottom:12px; }
+.confirm-box.confirmed{ border-color:#60774c; background:#f2f7ee; }
+.confirm-box input{ margin-top:3px; width:16px; height:16px; cursor:pointer; flex-shrink:0; }
+.confirm-box label{ color:#555; line-height:1.7; cursor:pointer; font-size:14px; }
+.button-group{ display:flex; justify-content:flex-end; gap:14px; margin-top:25px; }
+.cancel-btn{ background:#ccc; color:#333; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-size:15px; }
+.upload-btn{ background:#3f2617; color:white; border:none; padding:14px 32px; border-radius:10px; cursor:pointer; font-size:15px; }
+.upload-btn:hover{ background:#5a3a25; }
 </style>
