@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
+
 import DashboardPublisher from "../views/DashboardPublisher.vue";
 import DaftarNaskah from "../views/DaftarNaskah.vue";
+import DaftarNaskahPreview from "../views/DaftarNaskahPreview.vue";
 import Pemeriksaan from "../views/Pemeriksaan.vue";
 import Keputusan from "../views/Keputusan.vue";
 import Rekap from "../views/Rekap.vue";
-import DaftarNaskahPreview from "../views/DaftarNaskahPreview.vue";
 import Settings from "../views/Settings.vue";
 
 const routes = [
