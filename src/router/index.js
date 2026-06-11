@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import LoginPage from "../pages/auth/LoginPage.vue";
 import RegisterPage from "../pages/auth/RegisterPage.vue";
 
-/* ADMIN */
+/* ADMIN (Module 1) */
 import DashboardPage from "../pages/dashboard/DashboardPage.vue";
 import UserManagementPage from "../pages/admin/UserManagementPage.vue";
 
@@ -18,9 +18,7 @@ import ContractPage from "../pages/contracts/ContractPage.vue";
 import UploadKontrakPage from "../pages/upload_kontrak/UploadContract.vue";
 import ContractStatusPage from "../pages/upload_kontrak/ContractStatusPage.vue";
 
-/* ========================================================
-   MODULE 2 (PENULIS & NASKAH)
-   ======================================================== */
+/* MODULE 2 (PENULIS & NASKAH) */
 import DashboardPenulis    from '../views/DashboardPenulis.vue'
 import BukuSaya            from '../views/BukuSaya.vue'
 import DetailBuku          from '../views/DetailBuku.vue'
@@ -37,16 +35,47 @@ import HasilReview         from '../views/review/HasilReview.vue'
 import RiwayatDokumen      from '../views/RiwayatDokumen.vue'
 import RevisiPraCetak      from '../views/review/RevisiPraCetak.vue'
 
+/* ========================================================
+   MODULE 3 (REVIEWER)
+   ======================================================== */
+// (Admin routes for module-3)
+const adminRoutes = [
+  { path: '/admin/dashboard', name: 'AdminDashboard', component: () => import('../views/admin/DashboardView.vue'), meta: { title: 'Dashboard', roles: ['admin'] } },
+  { path: '/admin/manajemen-user', name: 'AdminManajemenUser', component: () => import('../views/admin/ManajemenUserView.vue'), meta: { title: 'Manajemen User', roles: ['admin'] } },
+  { path: '/admin/proposal-buku', name: 'AdminProposalBuku', component: () => import('../views/admin/ProposalBukuView.vue'), meta: { title: 'Proposal Buku', roles: ['admin'] } },
+  { path: '/admin/plotting-reviewer', name: 'AdminPlottingReviewer', component: () => import('../views/admin/PlottingReviewerView.vue'), meta: { title: 'Plotting Reviewer', roles: ['admin'] } },
+  { path: '/admin/monitoring-reviewer', name: 'AdminMonitoringReviewer', component: () => import('../views/admin/MonitoringReviewerView.vue'), meta: { title: 'Monitoring Reviewer', roles: ['admin'] } },
+  { path: '/admin/kompilasi-hasil-review', name: 'AdminKompilasiHasilReview', component: () => import('../views/admin/KompilasiHasilReviewView.vue'), meta: { title: 'Kompilasi Hasil Review', roles: ['admin'] } },
+  { path: '/admin/rubrik-penilaian', name: 'AdminRubrikPenilaian', component: () => import('../views/admin/RubrikPenilaianView.vue'), meta: { title: 'Rubrik Penilaian', roles: ['admin'] } },
+  { path: '/admin/notifikasi', name: 'AdminNotifikasi', component: () => import('../views/admin/NotifikasiView.vue'), meta: { title: 'Notifikasi', roles: ['admin'] } },
+  { path: '/admin/settings', name: 'AdminSettings', component: () => import('../views/admin/SettingsView.vue'), meta: { title: 'Settings', roles: ['admin'] } },
+]
+
+// (Reviewer routes for module-3)
+const reviewerRoutes = [
+  { path: '/reviewer', redirect: '/reviewer/daftar-tugas' },
+  { path: '/reviewer/dashboard', name: 'ReviewerDashboard', component: () => import('../views/reviewer/DashboardView.vue'), meta: { title: 'Dashboard Reviewer', roles: ['reviewer'] } },
+  { path: '/reviewer/daftar-tugas', name: 'ReviewerDaftarTugas', component: () => import('../views/reviewer/DaftarTugasView.vue'), meta: { title: 'Daftar Tugas', roles: ['reviewer'] } },
+  { path: '/reviewer/draft-naskah/:id', name: 'ReviewerDraftNaskah', component: () => import('../views/reviewer/DraftNaskahView.vue'), meta: { title: 'Draft Naskah', roles: ['reviewer'] } },
+  { path: '/reviewer/rubrik-penilaian', name: 'ReviewerRubrikPenilaian', component: () => import('../views/reviewer/RubrikPenilaianView.vue'), meta: { title: 'Rubrik Penilaian', roles: ['reviewer'] } },
+  { path: '/reviewer/riwayat-review', name: 'ReviewerRiwayatReview', component: () => import('../views/reviewer/RiwayatReviewView.vue'), meta: { title: 'Riwayat Review', roles: ['reviewer'] } },
+  { path: '/reviewer/support', name: 'ReviewerSupport', component: () => import('../views/reviewer/SupportView.vue'), meta: { title: 'Support', roles: ['reviewer'] } },
+  { path: '/reviewer/settings', name: 'ReviewerSettings', component: () => import('../views/reviewer/SettingsView.vue'), meta: { title: 'Settings', roles: ['reviewer'] } },
+]
+
 const routes = [
   { path: "/", redirect: "/login" },
   { path: "/login", name: "login", component: LoginPage, meta: { guest: true, title: "Login" } },
   { path: "/register", name: "register", component: RegisterPage, meta: { guest: true, title: "Form Kesediaan Penulis" } },
 
-  /* ADMIN */
+  /* ADMIN (Module 1) */
   { path: "/dashboard", name: "dashboard", component: DashboardPage, meta: { requiresAuth: true, roles: ["admin"], title: "Dashboard Admin" } },
   { path: "/hibah", name: "hibah", component: AuthorListPage, meta: { requiresAuth: true, title: "Pengajuan Hibah Buku" } },
   { path: "/users", name: "users", component: UserManagementPage, meta: { requiresAuth: true, roles: ["admin"], title: "Manajemen User" } },
   { path: "/contracts", name: "contracts", component: ContractPage, meta: { requiresAuth: true, title: "Kontrak Hibah" } },
+
+  /* ADMIN (Module 3) */
+  ...adminRoutes,
 
   /* KONTRAK PENULIS */
   { path: "/upload-kontrak", name: "upload-kontrak", component: UploadKontrakPage, meta: { requiresAuth: true, roles: ["penulis", "author"], title: "Upload Kontrak" } },
@@ -66,6 +95,9 @@ const routes = [
   { path: '/hasil-review/:id', component: HasilReview, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
   { path: '/riwayat-dokumen/:id', component: RiwayatDokumen, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
   { path: '/revisi-pra-cetak/:id', component: RevisiPraCetak, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+
+  /* REVIEWER (MODULE 3) */
+  ...reviewerRoutes,
 
   { path: "/:pathMatch(.*)*", redirect: "/login" },
 ];
@@ -103,13 +135,8 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.guest && token) {
     if (role === "admin") return next("/dashboard");
+    if (role === "reviewer") return next("/reviewer/dashboard");
     return next("/dashboard-penulis");
-  }
-
-  if (to.meta.roles && role) {
-    if (!to.meta.roles.includes(role)) {
-      if (role === "admin" && to.path !== "/dashboard") return next("/dashboard");
-    }
   }
 
   if (to.meta.requiresAuth && !role) {
