@@ -18,108 +18,56 @@ import ContractPage from "../pages/contracts/ContractPage.vue";
 import UploadKontrakPage from "../pages/upload_kontrak/UploadContract.vue";
 import ContractStatusPage from "../pages/upload_kontrak/ContractStatusPage.vue";
 
+/* ========================================================
+   MODULE 2 (PENULIS & NASKAH)
+   ======================================================== */
+import DashboardPenulis    from '../views/DashboardPenulis.vue'
+import BukuSaya            from '../views/BukuSaya.vue'
+import DetailBuku          from '../views/DetailBuku.vue'
+
+// Upload Draft (alur 3 langkah)
+import UploadDraft         from '../views/buku/UploadDraft.vue'
+import VerifikasiDraft     from '../views/buku/VerifikasiDraft.vue'
+import AtributBuku         from '../views/buku/AtributBuku.vue'
+
+// Review & Revisi
+import DokumenAdministrasi from '../views/review/DokumenAdministrasi.vue'
+import RevisiNaskah        from '../views/review/UploadRevisi.vue'
+import HasilReview         from '../views/review/HasilReview.vue'
+import RiwayatDokumen      from '../views/RiwayatDokumen.vue'
+import RevisiPraCetak      from '../views/review/RevisiPraCetak.vue'
+
 const routes = [
-  {
-    path: "/",
-    redirect: "/login",
-  },
+  { path: "/", redirect: "/login" },
+  { path: "/login", name: "login", component: LoginPage, meta: { guest: true, title: "Login" } },
+  { path: "/register", name: "register", component: RegisterPage, meta: { guest: true, title: "Form Kesediaan Penulis" } },
 
-  {
-    path: "/login",
-    name: "login",
-    component: LoginPage,
-    meta: {
-      guest: true,
-      title: "Login",
-    },
-  },
+  /* ADMIN */
+  { path: "/dashboard", name: "dashboard", component: DashboardPage, meta: { requiresAuth: true, roles: ["admin"], title: "Dashboard Admin" } },
+  { path: "/hibah", name: "hibah", component: AuthorListPage, meta: { requiresAuth: true, title: "Pengajuan Hibah Buku" } },
+  { path: "/users", name: "users", component: UserManagementPage, meta: { requiresAuth: true, roles: ["admin"], title: "Manajemen User" } },
+  { path: "/contracts", name: "contracts", component: ContractPage, meta: { requiresAuth: true, title: "Kontrak Hibah" } },
 
-  {
-    path: "/register",
-    name: "register",
-    component: RegisterPage,
-    meta: {
-      guest: true,
-      title: "Form Kesediaan Penulis",
-    },
-  },
+  /* KONTRAK PENULIS */
+  { path: "/upload-kontrak", name: "upload-kontrak", component: UploadKontrakPage, meta: { requiresAuth: true, roles: ["penulis", "author"], title: "Upload Kontrak" } },
+  { path: "/status-kontrak", name: "status-kontrak", component: ContractStatusPage, meta: { requiresAuth: true, roles: ["penulis", "author"], title: "Status Kontrak" } },
 
-  /* ==========================
-      ADMIN
-  ========================== */
+  /* DASHBOARD PENULIS (MODULE 2) */
+  { path: '/dashboard-penulis', component: DashboardPenulis, meta: { requiresAuth: true, roles: ["penulis", "author"], title: "Dashboard Penulis" } },
+  { path: '/buku-saya', component: BukuSaya, meta: { requiresAuth: true, roles: ["penulis", "author"], title: "Buku Saya" } },
+  { path: '/detail-buku/:id', component: DetailBuku, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
 
-  {
-    path: "/dashboard",
-    name: "dashboard",
-    component: DashboardPage,
-    meta: {
-      requiresAuth: true,
-      roles: ["admin"],
-      title: "Dashboard",
-    },
-  },
+  { path: '/upload-draft', component: UploadDraft, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/verifikasi-draft', component: VerifikasiDraft, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/atribut-buku', component: AtributBuku, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
 
-  {
-    path: "/hibah",
-    name: "hibah",
-    component: AuthorListPage,
-    meta: {
-      requiresAuth: true,
-      title: "Pengajuan Hibah Buku",
-    },
-  },
+  { path: '/dokumen-administrasi/:id', component: DokumenAdministrasi, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/revisi-naskah/:id', component: RevisiNaskah, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/hasil-review/:id', component: HasilReview, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/riwayat-dokumen/:id', component: RiwayatDokumen, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
+  { path: '/revisi-pra-cetak/:id', component: RevisiPraCetak, props: true, meta: { requiresAuth: true, roles: ["penulis", "author"] } },
 
-  {
-    path: "/users",
-    name: "users",
-    component: UserManagementPage,
-    meta: {
-      requiresAuth: true,
-      roles: ["admin"],
-      title: "Manajemen User",
-    },
-  },
-
-  {
-    path: "/contracts",
-    name: "contracts",
-    component: ContractPage,
-    meta: {
-      requiresAuth: true,
-      title: "Kontrak Hibah",
-    },
-  },
-
-  /* ==========================
-      PENULIS
-  ========================== */
-
-  {
-    path: "/upload-kontrak",
-    name: "upload-kontrak",
-    component: UploadKontrakPage,
-    meta: {
-      requiresAuth: true,
-      roles: ["penulis", "author"],
-      title: "Upload Kontrak",
-    },
-  },
-
-  {
-    path: "/status-kontrak",
-    name: "status-kontrak",
-    component: ContractStatusPage,
-    meta: {
-      requiresAuth: true,
-      roles: ["penulis", "author"],
-      title: "Status Kontrak",
-    },
-  },
-
-  {
-    path: "/:pathMatch(.*)*",
-    redirect: "/login",
-  },
+  { path: "/:pathMatch(.*)*", redirect: "/login" },
 ];
 
 const router = createRouter({
@@ -132,25 +80,16 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("auth_token");
-  
-  // ==========================================
-  // CARA PALING AMAN: EKSTRAK ROLE ANTI-ERROR
-  // ==========================================
   let role = "";
   const currentUserRaw = localStorage.getItem("current_user");
   
   if (currentUserRaw) {
     try {
       const userObj = JSON.parse(currentUserRaw);
-      
       if (userObj && userObj.role) {
-        // Jika role dari Laravel berupa teks langsung (misal: "admin")
         if (typeof userObj.role === "string") {
           role = userObj.role.toLowerCase();
-        } 
-        // Jika role dari Laravel berupa objek (misal: {id: 1, name: "admin"})
-        else if (typeof userObj.role === "object") {
-          // Cover berbagai kemungkinan nama kolom dari Laravel
+        } else if (typeof userObj.role === "object") {
           const roleName = userObj.role.name || userObj.role.role_name || userObj.role.nama || "";
           role = String(roleName).toLowerCase();
         }
@@ -160,38 +99,23 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // 1. Belum login tapi mau ke halaman terproteksi
-  if (to.meta.requiresAuth && !token) {
-    return next("/login");
-  }
+  if (to.meta.requiresAuth && !token) return next("/login");
 
-  // 2. Sudah login tapi malah buka halaman login/register
   if (to.meta.guest && token) {
     if (role === "admin") return next("/dashboard");
-    // JANGAN DIPAKSA KE UPLOAD, BIARKAN LOGIC DI HALAMAN TUJUAN YANG MENGATUR
-    return next("/status-kontrak"); 
+    return next("/dashboard-penulis");
   }
 
-  // 3. Pengecekan Hak Akses (Role)
   if (to.meta.roles && role) {
     if (!to.meta.roles.includes(role)) {
       if (role === "admin" && to.path !== "/dashboard") return next("/dashboard");
-      
-      // UBAH BAGIAN INI: Izinkan penulis mengakses KEDUA halaman
-      if ((role === "penulis" || role === "author") && 
-          to.path !== "/upload-kontrak" && 
-          to.path !== "/status-kontrak") {
-          return next("/status-kontrak");
-      }
     }
   }
 
-  // 4. Keamanan ekstra: Cegah infinite loop jika data role benar-benar rusak
   if (to.meta.requiresAuth && !role) {
      localStorage.clear();
      return next("/login");
   }
-
   next();
 });
 

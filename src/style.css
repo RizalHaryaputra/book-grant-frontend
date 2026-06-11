@@ -1,12 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --pbl-beige: #F2E8DF;
+  --pbl-brown: #5E4D44;
+  --pbl-cream: #FFFFFF;
+  --pbl-accent-green: #D1E7DD;
+  --pbl-text-dark: #333333;
+}
+
 body {
   margin: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: "Manrope", "Plus Jakarta Sans", sans-serif;
   background: #F4EDE4;
   color: #504137;
 }
@@ -22,4 +31,29 @@ button {
 
 button:hover {
   transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Card Shadow */
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Sidebar Active State */
+.sidebar-active {
+  background-color: var(--pbl-brown) !important;
+  color: white !important;
 }
