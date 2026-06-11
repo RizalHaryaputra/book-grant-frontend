@@ -166,6 +166,7 @@ const filteredManuscripts = computed(() => {
 
       if (activeTab.value === 'selesai') {
         return [
+          'preprint',
           'publisher_revised',
           'ready_to_print'
         ].includes(ms.status)
@@ -202,6 +203,7 @@ function countByTab(key) {
   if (key === 'selesai')
     return manuscripts.value.filter(
       m => [
+        'preprint',
         'publisher_revised',
         'ready_to_print'
       ].includes(m.status)

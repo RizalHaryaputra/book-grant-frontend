@@ -107,6 +107,14 @@
             </router-link>
 
             <router-link
+              :to="`/revisi-pra-cetak/${manuscript.id}`"
+              class="action-btn"
+              :class="{ disabled: !['publisher_revised', 'preprint'].includes(manuscript.status) }"
+            >
+              🖨️ Hasil Penerbit
+            </router-link>
+
+            <router-link
               :to="`/riwayat-dokumen/${manuscript.id}`"
               class="action-btn"
             >
