@@ -35,10 +35,7 @@ import HasilReview         from '../views/review/HasilReview.vue'
 import RiwayatDokumen      from '../views/RiwayatDokumen.vue'
 import RevisiPraCetak      from '../views/review/RevisiPraCetak.vue'
 
-/* ========================================================
-   MODULE 3 (REVIEWER)
-   ======================================================== */
-// (Admin routes for module-3)
+/* MODULE 3 (REVIEWER) */
 const adminRoutes = [
   { path: '/admin/dashboard', name: 'AdminDashboard', component: () => import('../views/admin/DashboardView.vue'), meta: { title: 'Dashboard', roles: ['admin'] } },
   { path: '/admin/manajemen-user', name: 'AdminManajemenUser', component: () => import('../views/admin/ManajemenUserView.vue'), meta: { title: 'Manajemen User', roles: ['admin'] } },
@@ -51,7 +48,6 @@ const adminRoutes = [
   { path: '/admin/settings', name: 'AdminSettings', component: () => import('../views/admin/SettingsView.vue'), meta: { title: 'Settings', roles: ['admin'] } },
 ]
 
-// (Reviewer routes for module-3)
 const reviewerRoutes = [
   { path: '/reviewer', redirect: '/reviewer/daftar-tugas' },
   { path: '/reviewer/dashboard', name: 'ReviewerDashboard', component: () => import('../views/reviewer/DashboardView.vue'), meta: { title: 'Dashboard Reviewer', roles: ['reviewer'] } },
@@ -61,6 +57,25 @@ const reviewerRoutes = [
   { path: '/reviewer/riwayat-review', name: 'ReviewerRiwayatReview', component: () => import('../views/reviewer/RiwayatReviewView.vue'), meta: { title: 'Riwayat Review', roles: ['reviewer'] } },
   { path: '/reviewer/support', name: 'ReviewerSupport', component: () => import('../views/reviewer/SupportView.vue'), meta: { title: 'Support', roles: ['reviewer'] } },
   { path: '/reviewer/settings', name: 'ReviewerSettings', component: () => import('../views/reviewer/SettingsView.vue'), meta: { title: 'Settings', roles: ['reviewer'] } },
+]
+
+/* MODULE 4 (PUBLISHER) */
+import DashboardPublisher from "../views/DashboardPublisher.vue";
+import DaftarNaskah from "../views/DaftarNaskah.vue";
+import DaftarNaskahPreview from "../views/DaftarNaskahPreview.vue";
+import Pemeriksaan from "../views/Pemeriksaan.vue";
+import Keputusan from "../views/Keputusan.vue";
+import Rekap from "../views/Rekap.vue";
+import SettingsPublisher from "../views/Settings.vue"; // rename to avoid conflict if any
+
+const publisherRoutes = [
+  { path: "/publisher/dashboard", name: "dashboard-publisher", component: DashboardPublisher, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/daftar-naskah", name: "daftar-naskah", component: DaftarNaskah, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/daftar-naskah/:id", name: "daftar-naskah-preview", component: DaftarNaskahPreview, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/pemeriksaan", name: "pemeriksaan", component: Pemeriksaan, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/keputusan", name: "keputusan", component: Keputusan, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/rekap", name: "rekap", component: Rekap, meta: { roles: ['penerbit', 'publisher'] } },
+  { path: "/publisher/settings", name: "settings-publisher", component: SettingsPublisher, meta: { roles: ['penerbit', 'publisher'] } },
 ]
 
 const routes = [
@@ -99,6 +114,9 @@ const routes = [
   /* REVIEWER (MODULE 3) */
   ...reviewerRoutes,
 
+  /* PUBLISHER (MODULE 4) */
+  ...publisherRoutes,
+
   { path: "/:pathMatch(.*)*", redirect: "/login" },
 ];
 
@@ -136,6 +154,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.guest && token) {
     if (role === "admin") return next("/dashboard");
     if (role === "reviewer") return next("/reviewer/dashboard");
+    if (role === "penerbit" || role === "publisher") return next("/publisher/dashboard");
     return next("/dashboard-penulis");
   }
 
