@@ -37,3 +37,12 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Environment variables
+.env
+.env.*
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
