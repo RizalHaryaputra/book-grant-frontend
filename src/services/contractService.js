@@ -30,12 +30,19 @@ export const validateContract = async (id, decision, notes) => {
 |--------------------------------------------------------------------------
 */
 export const uploadContract = async (formData) => {
-  const response = await api.post("/author/contracts/upload", formData, {
+  const token = localStorage.getItem("auth_token") || localStorage.getItem("token")
+  const response = await fetch(`${api.defaults.baseURL}/author/contracts/upload`, {
+    method: "POST",
     headers: {
-      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`
     },
+    body: formData
   })
-  return response.data
+  const data = await response.json()
+  if (!response.ok) {
+    throw { response: { data } } // Simulate Axios error structure
+  }
+  return data
 }
 
 /*

@@ -320,7 +320,7 @@ async function deleteRubrik(item) {
 
 <style scoped>
 .layout { display: flex; min-height: 100vh; background: linear-gradient(135deg, #f0ebe3, #e8ddd0); }
-.main-area { margin-left: 210px; flex: 1; padding: 20px 24px; min-height: 100vh; display: flex; flex-direction: column; }
+.main-area { margin-left: 0px; flex: 1; padding: 20px 24px; min-height: 100vh; display: flex; flex-direction: column; }
 
 .page-header { margin-bottom: 16px; margin-top: -6px; }
 .subtitle { font-size: 13px; color: #555; margin: 0; }

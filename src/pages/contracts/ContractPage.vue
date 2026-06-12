@@ -149,7 +149,7 @@
 
           <hr class="border-[#D9C5B2] my-5" />
 
-          <div class="space-y-3" v-if="isAdmin && selectedContract.status === 'uploaded'">
+          <div class="space-y-3" v-if="isAdmin && selectedContract.status === 'pending'">
             
             <button @click="approveContract" class="w-full flex items-center px-5 py-3.5 bg-white border border-green-600 rounded-[14px] hover:bg-green-50 transition group">
               <div class="flex items-center justify-center w-8 h-8 rounded-full border border-green-600 text-green-600 mr-4">
@@ -333,6 +333,6 @@ const rejectContract = async () => {
 const statusClass = (s) => ({
   'validated': 'bg-green-100 text-green-700 border border-green-200',
   'rejected': 'bg-red-100 text-red-700 border border-red-200',
-  'uploaded': 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+  'pending': 'bg-yellow-100 text-yellow-700 border border-yellow-200'
 }[s] || 'bg-gray-100 text-gray-700 border border-gray-200')
 </script>

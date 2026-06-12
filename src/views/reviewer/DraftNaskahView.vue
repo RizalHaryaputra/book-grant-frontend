@@ -97,7 +97,7 @@ function goBack() {
 
 <style scoped>
 .layout { display: flex; min-height: 100vh; background: #2a1a10; } /* Dark background for this view outside the sidebar */
-.main-area { margin-left: 210px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: linear-gradient(135deg, #f0ebe3, #e8ddd0); }
+.main-area { margin-left: 0px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: linear-gradient(135deg, #f0ebe3, #e8ddd0); }
 
 /* Draft Header */
 .draft-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #5a4030; color: #fff; }

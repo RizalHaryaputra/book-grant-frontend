@@ -10,8 +10,11 @@
     </h2>
 
     <div class="space-y-3">
+      <div v-if="preprints.length === 0" class="text-center text-gray-500 py-4">
+        Tidak ada naskah yang perlu ditinjau.
+      </div>
       <div
-        v-for="book in books"
+        v-for="book in preprints"
         :key="book.id"
         class="bg-white rounded-xl px-4 py-3 flex justify-between items-center border-l-4 border-green-600 shadow-sm"
       >
@@ -22,7 +25,7 @@
         </div>
 
         <span class="text-sm text-gray-500">
-          Buku Ajar
+          {{ book.author }}
         </span>
       </div>
     </div>
@@ -30,18 +33,10 @@
 </template>
 
 <script setup>
-const books = [
-  {
-    id: 1,
-    title: "Pemrograman Berorientasi Objek"
-  },
-  {
-    id: 2,
-    title: "Pemrograman Berorientasi Objek"
-  },
-  {
-    id: 3,
-    title: "Pemrograman Berorientasi Objek"
+defineProps({
+  preprints: {
+    type: Array,
+    default: () => []
   }
-]
+})
 </script>

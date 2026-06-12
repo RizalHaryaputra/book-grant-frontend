@@ -25,20 +25,45 @@
       </div>
 
       <!-- Chart Section -->
-      <div class="grid grid-cols-2 gap-6 mt-8">
-        <PieChartCard />
-        <ReviewCard />
+      <div v-if="!loading" class="grid grid-cols-2 gap-6 mt-8">
+        <PieChartCard :data="dashboardData" />
+        <ReviewCard :preprints="dashboardData.latest_preprints" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue"
 import Sidebar from "../components/Sidebar.vue";
 import TopNavbar from "../components/TopNavbar.vue";
 import HeroBanner from "../components/HeroBanner.vue";
 import PieChartCard from "../components/PieChartCard.vue";
 import ReviewCard from "../components/ReviewCard.vue";
+import { getPublisherDashboard } from "../services/publisherService"
+
+const loading = ref(true)
+const dashboardData = ref({
+  preprint_count: 0,
+  approved_count_this_month: 0,
+  revised_count_this_month: 0,
+  latest_preprints: []
+})
+
+const loadDashboard = async () => {
+  try {
+    const data = await getPublisherDashboard()
+    dashboardData.value = data
+  } catch (e) {
+    console.error("Failed to load publisher dashboard", e)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadDashboard()
+})
 </script>
 
 <style scoped>

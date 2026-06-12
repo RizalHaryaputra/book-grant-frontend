@@ -167,35 +167,37 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'KeputusanView'
+}
+</script>
+
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import { getPrePrintManuscripts, submitDecision } from '../services/publisherService'
 
 const expandedId = ref(null)
 const catatanRevisi = reactive({})
 const toast = reactive({ show: false, message: '', type: '' })
 
-const naskahList = ref([
-  {
-    id: 1,
-    judul: 'Pemrograman Berorientasi Objek',
-    kategori: 'Buku Ajar',
-    reviewers: ['Dr. Arief', 'Prof. Rina'],
-  },
-  {
-    id: 2,
-    judul: 'Pemrograman Berorientasi Objek',
-    kategori: 'Buku Ajar',
-    reviewers: ['Dr. Arief', 'Prof. Rina'],
-  },
-  {
-    id: 3,
-    judul: 'Pemrograman Berorientasi Objek',
-    kategori: 'Buku Ajar',
-    reviewers: ['Dr. Arief', 'Prof. Rina'],
-  },
-])
+const naskahList = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await getPrePrintManuscripts()
+    naskahList.value = data.items.map(item => ({
+      id: item.id,
+      judul: item.title,
+      kategori: 'Buku Ajar', // Default or from API
+      reviewers: item.author_name ? [item.author_name] : [], // Use author_name temporarily as reviewer field not provided in list
+    }))
+  } catch (e) {
+    console.error("Gagal mengambil naskah keputusan", e)
+  }
+})
 
 function toggleRevisi(id) {
   expandedId.value = expandedId.value === id ? null : id
@@ -208,17 +210,29 @@ function showToast(message, type) {
   setTimeout(() => { toast.show = false }, 3000)
 }
 
-function handleApprove(item) {
-  console.log({ manuscript_id: item.id, decision: 'approved' })
-  showToast(`"${item.judul}" berhasil di-approve!`, 'approve')
+async function handleApprove(item) {
+  try {
+    await submitDecision({ manuscript_id: item.id, status: 'approved' })
+    showToast(`"${item.judul}" berhasil di-approve!`, 'approve')
+    naskahList.value = naskahList.value.filter(n => n.id !== item.id)
+  } catch (e) {
+    console.error(e)
+    showToast(`Gagal approve "${item.judul}"`, 'revisi')
+  }
 }
 
-function submitRevisi(item) {
+async function submitRevisi(item) {
   if (!catatanRevisi[item.id]) return
-  console.log({ manuscript_id: item.id, decision: 'revised', notes: catatanRevisi[item.id] })
-  showToast(`Catatan revisi untuk "${item.judul}" terkirim!`, 'revisi')
-  expandedId.value = null
-  catatanRevisi[item.id] = ''
+  try {
+    await submitDecision({ manuscript_id: item.id, status: 'revised', final_notes: catatanRevisi[item.id] })
+    showToast(`Catatan revisi untuk "${item.judul}" terkirim!`, 'revisi')
+    expandedId.value = null
+    catatanRevisi[item.id] = ''
+    naskahList.value = naskahList.value.filter(n => n.id !== item.id)
+  } catch (e) {
+    console.error(e)
+    showToast(`Gagal mengirim revisi "${item.judul}"`, 'revisi')
+  }
 }
 </script>
 

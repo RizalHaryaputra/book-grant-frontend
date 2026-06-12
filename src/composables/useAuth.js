@@ -13,6 +13,9 @@ export function useAuth() {
    * LOGIN
    */
 const login = async (credentials) => {
+  isLoading.value = true
+  errorMessage.value = ""
+  
   try {
     const data = await authService.login(credentials)
 
@@ -25,18 +28,31 @@ const login = async (credentials) => {
 
     console.log("ROLE:", roleName)
 
-    if (roleName === "penulis") {
-      router.push("/upload-kontrak")
+    if (roleName === "author" || roleName === "penulis") {
+      router.push("/dashboard-penulis")
     }
     else if (roleName === "admin") {
       router.push("/dashboard")
+    }
+    else if (roleName === "reviewer") {
+      router.push("/reviewer/dashboard")
+    }
+    else if (roleName === "penerbit" || roleName === "publisher" || roleName === "editor") {
+      router.push("/publisher/dashboard")
     }
     else {
       router.push("/login")
     }
   }
   catch (error) {
-    console.error(error)
+    console.error("LOGIN ERROR:", error)
+    if (error.response?.status === 401 || error.response?.status === 404 || error.response?.status === 422) {
+      errorMessage.value = error.response.data?.message || "Email atau password salah."
+    } else {
+      errorMessage.value = error.response?.data?.message || "Terjadi kesalahan pada server."
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 

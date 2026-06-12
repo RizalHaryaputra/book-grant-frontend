@@ -40,7 +40,6 @@
           />
 
           <button
-            v-if="selectedRole !== 'penulis'"
             @click="openAddModal"
             class="h-12 px-6 bg-[#4B3027] text-white rounded-xl hover:bg-[#3A241C] transition whitespace-nowrap font-medium"
           >
@@ -77,8 +76,8 @@
                 <td class="p-4 font-medium">{{ user.name }}</td>
                 <td class="p-4">{{ user.email }}</td>
 
-                <template v-if="selectedRole === 'penulis'">
-                  <td class="p-4">{{ user.institution || '-' }}</td>
+                <template v-if="selectedRole === 'author'">
+                  <td class="p-4">{{ user.author_profile?.institutions || user.institution || '-' }}</td>
                   <td class="p-4">
                     <span
                       class="px-3 py-1 rounded-full text-xs font-semibold"
@@ -140,6 +139,7 @@
           <div class="space-y-4">
             <input v-model="addForm.name" class="modal-input" placeholder="Nama Lengkap" />
             <input v-model="addForm.email" type="email" class="modal-input" placeholder="Email" />
+            <input v-if="addForm.role === 'author'" v-model="addForm.institution" class="modal-input" placeholder="Institusi" />
 
             <div class="w-full h-12 border bg-gray-50 border-gray-200 rounded-xl px-4 flex items-center justify-between text-gray-500">
               <span>Role Akun:</span>
@@ -169,7 +169,7 @@
             <input v-model="editForm.name" class="modal-input" placeholder="Nama" />
             <input v-model="editForm.email" type="email" class="modal-input" placeholder="Email" />
 
-            <template v-if="selectedRole === 'penulis'">
+            <template v-if="selectedRole === 'author'">
               <input v-model="editForm.institution" class="modal-input" placeholder="Institusi" />
               <div class="w-full h-12 border bg-gray-50 border-gray-200 rounded-xl px-4 flex items-center justify-between text-gray-500">
                 <span>Status Kontrak:</span>
@@ -200,7 +200,7 @@ import { useUser } from "../../composables/useUser";
 
 const { users, loading, error, fetchUsers, editUser, removeUser, createUser } = useUser();
 
-const selectedRole = ref("penulis");
+const selectedRole = ref("author");
 const search = ref("");
 const page = ref(1);
 const perPage = 5;
@@ -219,17 +219,18 @@ const addForm = reactive({
   name: "",
   email: "",
   role: "",
+  institution: "",
 });
 
 const roles = [
-  { label: "Penulis", value: "penulis" },
+  { label: "Penulis", value: "author" },
   { label: "Reviewer", value: "reviewer" },
-  { label: "Penerbit", value: "penerbit" },
+  { label: "Penerbit", value: "editor" },
   { label: "Admin", value: "admin" },
 ];
 
 const tableColumns = computed(() => {
-  if (selectedRole.value === "penulis") {
+  if (selectedRole.value === "author") {
     return [
       { key: "name", label: "Nama" },
       { key: "email", label: "Email" },
@@ -299,9 +300,9 @@ const roleClass = (role) => {
       return "bg-purple-100 text-purple-700";
     case "reviewer":
       return "bg-blue-100 text-blue-700";
-    case "penerbit":
+    case "editor":
       return "bg-yellow-100 text-yellow-700";
-    case "penulis":
+    case "author":
       return "bg-green-100 text-green-700";
     default:
       return "bg-gray-100 text-gray-700";
@@ -365,6 +366,7 @@ const contractStatusClass = (status) => {
 const openAddModal = () => {
   addForm.name = "";
   addForm.email = "";
+  addForm.institution = "";
   addForm.role = selectedRole.value;
   showAddModal.value = true;
 };
@@ -381,6 +383,10 @@ const saveNewUser = async () => {
       email: addForm.email,
       role: addForm.role,
     };
+    
+    if (addForm.role === 'author') {
+      payload.institution = addForm.institution;
+    }
 
     await createUser(payload);
     await fetchUsers(selectedRole.value);
@@ -396,7 +402,7 @@ const openEdit = (user) => {
   editForm.id = user.id;
   editForm.name = user.name || "";
   editForm.email = user.email || "";
-  editForm.institution = user.institution || user.author_profile?.institution || "";
+  editForm.institution = user.institution || user.author_profile?.institutions || "";
   editFormUser.value = user;
   showEditModal.value = true;
 };
@@ -408,7 +414,7 @@ const saveEdit = async () => {
       email: editForm.email,
     };
 
-    if (selectedRole.value === "penulis") {
+    if (selectedRole.value === "author") {
       payload.institution = editForm.institution;
     }
 

@@ -5,11 +5,11 @@ export const getDashboard = async () => {
   const role = localStorage.getItem('user_role')
 
   // 2. Default endpoint adalah Admin
-  let endpoint = "/admin/dashboard-stats"
+  let endpoint = "/v1/admin/dashboard/summary"
 
   // 3. Sesuaikan rute API jika yang login bukan Admin
   if (role === 'penerbit') {
-    endpoint = "/publisher/dashboard"
+    endpoint = "/v1/publisher/dashboard"
   } else if (role === 'penulis') {
     endpoint = "/author/dashboard"
   } else if (role === 'reviewer') {

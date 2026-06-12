@@ -227,11 +227,11 @@
               Pilih Jenis Buku
             </option>
           
-            <option value="buku ajar" style="color:#2B211C">
+            <option value="Buku Ajar" style="color:#2B211C">
               Buku Ajar
             </option>
           
-            <option value="buku referensi" style="color:#2B211C">
+            <option value="Buku Referensi" style="color:#2B211C">
               Buku Referensi
             </option>
           </select>

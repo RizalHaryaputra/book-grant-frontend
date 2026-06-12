@@ -71,81 +71,49 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
 import BookCover from '../components/BookCover.vue'
+import { getPrePrintManuscripts } from '../services/publisherService'
 
 const router = useRouter()
 
-// Klik cover → pindah ke halaman preview dengan id naskah
+const naskahList = ref([])
+const loading = ref(true)
+
+const loadManuscripts = async () => {
+  try {
+    const data = await getPrePrintManuscripts()
+    naskahList.value = data.items.map(item => ({
+      id: item.id,
+      title: item.title,
+      author: item.author_name,
+      type: 'Buku Ajar', // Assuming a default or could come from API
+      timeAgo: new Date(item.submitted_at).toLocaleDateString(),
+      coverTitle: item.title,
+      coverAuthor: item.author_name,
+      statuses: [
+        item.cover_checked ? 'Cover Selesai' : 'Cover Pending',
+        item.pages_checked ? 'Halaman Selesai' : 'Halaman Pending',
+        item.admin_checked ? 'Admin Selesai' : 'Admin Pending'
+      ]
+    }))
+  } catch (e) {
+    console.error("Gagal memuat daftar naskah", e)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadManuscripts()
+})
+
 const bukaPreview = (item) => {
   router.push({ name: 'daftar-naskah-preview', params: { id: item.id } })
 }
-
-const naskahList = ref([
-  {
-    id: 1,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Selesai Review', 'Belum Terbit']
-  },
-  {
-    id: 2,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Selesai Review', 'Belum Terbit']
-  },
-  {
-    id: 3,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Sedang di Review', 'Belum Terbit']
-  },
-  {
-    id: 4,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Selesai Review', 'Belum Terbit']
-  },
-  {
-    id: 5,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Selesai Review', 'Belum Terbit']
-  },
-  {
-    id: 6,
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    timeAgo: 'Di Upload 2 Jam yang lalu',
-    coverTitle: 'DASAR JARINGAN KOMPUTER',
-    coverAuthor: 'Ihsanul Fikri, M.Kom',
-    statuses: ['Selesai', 'Sedang di Review', 'Belum Terbit']
-  }
-])
 
 const getStatusClass = (status) => {
   switch (status) {

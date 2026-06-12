@@ -25,7 +25,7 @@ export const authHeaders = (isJson = true) => {
 // Request Interceptor: Menambahkan Token Otomatis
 api.interceptors.request.use(
   (config) => {
-    // Gunakan 'auth_token' dari modul 1, fallback ke 'token' modul 2
+    // Standardisasi token: Coba ambil dari 'auth_token' (Modul 1/4) atau 'token' (Modul 2)
     const token = localStorage.getItem("auth_token") || localStorage.getItem("token") 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`

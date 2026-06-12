@@ -248,7 +248,7 @@ onMounted(() => fetchTasks())
 
 <style scoped>
 .layout { display: flex; min-height: 100vh; background: linear-gradient(135deg, #f0ebe3, #e8ddd0); }
-.main-area { margin-left: 210px; flex: 1; padding: 20px 24px; min-height: 100vh; }
+.main-area { margin-left: 0px; flex: 1; padding: 20px 24px; min-height: 100vh; }
 
 .subtitle { font-size: 13px; color: #555; margin-bottom: 20px; margin-top: -4px; }
 

@@ -154,7 +154,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.guest && token) {
     if (role === "admin") return next("/dashboard");
     if (role === "reviewer") return next("/reviewer/dashboard");
-    if (role === "penerbit" || role === "publisher") return next("/publisher/dashboard");
+    if (role === "penerbit" || role === "publisher" || role === "editor") return next("/publisher/dashboard");
     return next("/dashboard-penulis");
   }
 

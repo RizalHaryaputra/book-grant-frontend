@@ -363,7 +363,7 @@ function fromInputDate(str) {
 <style scoped>
 /* ── Layout ── */
 .layout { display: flex; min-height: 100vh; background: linear-gradient(135deg, #f0ebe3, #e8ddd0); }
-.main-area { margin-left: 210px; flex: 1; padding: 20px 24px; min-height: 100vh; }
+.main-area { margin-left: 0px; flex: 1; padding: 20px 24px; min-height: 100vh; }
 
 /* ── Content Card ── */
 .content-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }

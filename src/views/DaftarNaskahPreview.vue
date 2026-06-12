@@ -262,38 +262,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import { getManuscript } from '../services/publisherService'
 
 const router = useRouter()
 const route = useRoute()
 
 const id = route.params.id
 
-const naskahList = [
-  {
-    id: '1',
-    title: 'Pemrograman Berorientasi',
-    author: 'Budi Santoso',
-    type: 'Buku Ajar',
-    statuses: ['Selesai Review', 'Selesai', 'Belum Terbit']
-  },
-  {
-    id: '2',
-    title: 'Dasar Jaringan Komputer',
-    author: 'Ihsanul Fikri',
-    type: 'Buku Ajar',
-    statuses: ['Selesai', 'Sedang di Review', 'Belum Terbit']
-  },
-]
-
-const naskah = ref(naskahList.find(n => n.id === id) || {
-  title: 'Naskah Tidak Ditemukan',
+const naskah = ref({
+  title: 'Memuat...',
   author: '-',
   type: '-',
-  statuses: []
+  statuses: [],
+  cover_url: ''
+})
+
+onMounted(async () => {
+  try {
+    const data = await getManuscript(id)
+    naskah.value = {
+      title: data.manuscript.title,
+      author: data.manuscript.author_name,
+      type: data.manuscript.science_field || 'Buku Ajar',
+      statuses: [
+        data.check_result?.cover_ok ? 'Selesai' : 'Sedang di Review'
+      ],
+      cover_url: data.manuscript.cover_file_url
+    }
+  } catch(e) {
+    console.error(e)
+    naskah.value.title = "Naskah Tidak Ditemukan"
+  }
 })
 
 const currentPage = ref(1)

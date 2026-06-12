@@ -26,7 +26,8 @@ export function useUser() {
       name: payload.name,
       is_active: payload.status_akun === "aktif",
       email: payload.email,
-      role: payload.role
+      role: payload.role,
+      institution: payload.institution
     };
 
     await updateUser(id, apiPayload);

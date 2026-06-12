@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-screen bg-[#F4EDE4]">
-    <AppSidebar />
+    <Sidebar />
     <main class="flex-1 overflow-y-auto h-screen">
       <div class="px-8 py-7">
         <AppTopbar />
@@ -11,6 +11,6 @@
 </template>
 
 <script setup>
-import AppSidebar from "./AppSidebar.vue"
+import Sidebar from "../Sidebar.vue"
 import AppTopbar from "./AppTopbar.vue"
 </script>
